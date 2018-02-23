@@ -1,13 +1,11 @@
+# External modules imports
 from __future__ import division
-import argparse, pdb, os, numpy, imp, time
-from datetime import datetime
-import torch, torchvision
-import torch.nn as nn
+import argparse, pdb, os, numpy, time, torch
 import torch.optim as optim
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-import models, utils
+# Project imports
+import utils
 
 
 # PARAMETERS ----------------------------------------------------------------------------------------------------
