@@ -7,9 +7,9 @@ class MyDataset(Dataset):
     def __init__(self, opt, train):
         self.opt = opt
         if train:
-            self.file = open(self.opt.input_file_train).read()
+            self.file = open(self.opt.input_file_train, "r",encoding='utf-8', errors='ignore').read()
         else:
-            self.file = open(self.opt.input_file_test).read()
+            self.file = open(self.opt.input_file_test, "r",encoding='utf-8', errors='ignore').read()
         self.len = len(self.file)
 
     def __getitem__(self, index):
