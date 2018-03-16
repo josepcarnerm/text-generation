@@ -41,7 +41,7 @@ if opt.gpu != 0:
     opt.device = opt.gpu
     print('Setting cuda device to {}. ({} Device available)'.format(opt.device, torch.cuda.device_count()))
     print('Options are: {}'.format(opt))
-    torch.cuda.set_device(opt.gpu-1)
+    torch.cuda.set_device(opt.gpu)
 
 # Set filename based on parameters
 opt.save_dir = utils.get_savedir(opt)
