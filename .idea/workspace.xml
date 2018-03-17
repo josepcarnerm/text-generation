@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f1a328fc-5ae6-48bb-b28c-8d28d7ac3793" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/models/char_cnn_rnn.py" afterPath="$PROJECT_DIR$/models/char_cnn_rnn.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/models/char_rnn.py" afterPath="$PROJECT_DIR$/models/char_rnn.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_jobs.py" afterPath="$PROJECT_DIR$/run_jobs.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/train.py" afterPath="$PROJECT_DIR$/train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -40,11 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="char_rnn.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="char_rnn.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/models/char_rnn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="469">
-              <caret line="72" column="0" lean-forward="false" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
+            <state relative-caret-position="380">
+              <caret line="35" column="39" lean-forward="false" selection-start-line="35" selection-start-column="39" selection-end-line="35" selection-end-column="39" />
               <folding>
                 <element signature="e#27#47#0" expanded="true" />
               </folding>
@@ -52,7 +48,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="run_jobs.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="run_jobs.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/run_jobs.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
@@ -750,16 +746,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/char_rnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="469">
-          <caret line="72" column="0" lean-forward="false" selection-start-line="72" selection-start-column="0" selection-end-line="72" selection-end-column="0" />
-          <folding>
-            <element signature="e#27#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/train.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
@@ -776,6 +762,16 @@
           <caret line="5" column="73" lean-forward="false" selection-start-line="5" selection-start-column="73" selection-end-line="5" selection-end-column="73" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/char_rnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="380">
+          <caret line="35" column="39" lean-forward="false" selection-start-line="35" selection-start-column="39" selection-end-line="35" selection-end-column="39" />
+          <folding>
+            <element signature="e#27#47#0" expanded="true" />
           </folding>
         </state>
       </provider>
