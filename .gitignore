@@ -1,10 +1,11 @@
 venv/
 results/
 __pycache__/
-.idea/*
-.idea
+models/__pycache__
+dataloaders/__pycache__
+workspace.iml
 .idea/
-**/.idea/workspace.xml 
+*.idea
 **/.idea/tasks.xml
 txtgen/
 text-generation.iml
