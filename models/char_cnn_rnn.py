@@ -9,6 +9,7 @@ from utils import move, zeros, to_variable, to_string, is_remote
 
 
 class Model(nn.Module):
+    # WORK IN PROGRESS
 
     def __init__(self, opt):
         super(Model, self).__init__()

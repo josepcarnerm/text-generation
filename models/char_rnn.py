@@ -24,35 +24,41 @@ class Model(nn.Module):
         self.submodules = [self.encoder, self.gru, self.decoder, self.criterion]
         move(gpu=is_remote(), tensor_list=self.submodules)
 
-    def init_hidden(self):
-        return zeros(gpu=is_remote(), sizes=[self.opt.n_layers_rnn, 1, self.opt.hidden_size_rnn])
+    def init_hidden(self, batch_size):
+        return zeros(gpu=is_remote(), sizes=[self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn])
 
-    def forward(self, sentence, num_chars_encoder=0):
+    def forward(self, sentences, num_chars_encoder=0):
 
-        input = to_variable(gpu=is_remote(), sentence=sentence)
-        seq_len = input.size(0)
-        h = self.init_hidden()
+        input = torch.stack([to_variable(gpu=is_remote(), sentence=sentence) for sentence in sentences])
+        h = self.init_hidden(self.opt.batch_size)
 
-        input_emb = self.encoder(input) \
-            .view(seq_len, 1, self.opt.hidden_size_rnn)  # Batch size x N channels x Width (Seq len) x Height (Emb dim)
+
+        input_emb = self.encoder(input).permute(1, 0, 2)\
+                        .contiguous()\
+                        .view(self.opt.sentence_len, self.opt.batch_size, self.opt.hidden_size_rnn)
         output_rnn, h = self.gru(input_emb, h)
-        output = self.decoder(output_rnn.squeeze())  # Seq len x n_chars (one hot vector of output sentence)
-        preds = output[num_chars_encoder:-1]
+        output = self.decoder(output_rnn)\
+                     .permute(1,0,2)\
+                     .contiguous()\
+                     .view(self.opt.batch_size, self.opt.sentence_len, self.opt.n_characters)
+
+        preds = output[:,num_chars_encoder:-1]
 
         return preds
 
-    def evaluate(self, sentence):
+    def evaluate(self, sentences):
         loss = 0
-        preds = self.forward(sentence)
-        target = to_variable(gpu=is_remote(), sentence=sentence)
-        for i in range(len(sentence) - 1):  # First pred char is not eval
-            loss += self.criterion(preds[i].unsqueeze(0), target[i + 1])
-        return loss
+        preds = self.forward(sentences)
+        targets = torch.stack([to_variable(gpu=is_remote(), sentence=sentence) for sentence in sentences])
+        targets = targets[:, 1:]
+        for i in range(targets.size(1)):  # First pred char is not eval
+            loss += self.criterion(preds[:,i], targets[:,i])
+        return loss/targets.size(1)
 
     def test(self, start, predict_len=100, temperature=0.8):
 
         start = to_variable(gpu=is_remote(), sentence=start)
-        h = self.init_hidden()
+        h = self.init_hidden(1)
 
         for c in start:
             c = c.view(1, 1)

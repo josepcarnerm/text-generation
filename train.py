@@ -14,20 +14,20 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
 parser.add_argument('-dataloader', type=str, default='single_file')  # Must be a valid file name in dataloaders/ folder
 parser.add_argument('-model', type=str, default='char_rnn')  # Must be a valid file name in models/ folder
-parser.add_argument('-batch_size', type=int, default=64)
-parser.add_argument('-lrt', type=float, default=0.0005)
-parser.add_argument('-epoch_size', type=int, default=40)
-parser.add_argument('-n_epochs', type=int, default=2000)
+parser.add_argument('-batch_size', type=int, default=100)
+parser.add_argument('-lrt', type=float, default=0.01)
+parser.add_argument('-epoch_size', type=int, default=100)
+parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 
 # Model dependent settings
-parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
+parser.add_argument('-hidden_size_rnn', type=int, default=50, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 
 # Dataloader dependent settings
 parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
 parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
-parser.add_argument('-sentence_len', type=int, default=20)
+parser.add_argument('-sentence_len', type=int, default=200)
 
 opt = parser.parse_args()
 # --------------------------------------------------------------------------------------------------------------
@@ -64,13 +64,13 @@ def train_epoch(nsteps):
     total_loss = 0
     model.train()
     for iter, sentences in enumerate(train_dataloader):
+        if iter==0:
+            print(sentences[0])
         optimizer.zero_grad()
         model.zero_grad()
 
         # Forward step
-        loss_batch = 0
-        for sentence in sentences:
-            loss_batch += model.evaluate(sentence)
+        loss_batch = model.evaluate(sentences)
         total_loss += loss_batch.data[0]/opt.batch_size
 
         # Backward step
@@ -88,9 +88,7 @@ def test_epoch(nsteps):
     for iter, sentences in enumerate(test_dataloader):
 
         # Forward step
-        loss_batch = 0
-        for sentence in sentences:
-            loss_batch += model.evaluate(sentence)
+        loss_batch = model.evaluate(sentences)
         total_loss += loss_batch.data[0] / opt.batch_size
 
         if iter == nsteps:
