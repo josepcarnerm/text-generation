@@ -38,10 +38,10 @@ torch.manual_seed(opt.seed)
 torch.set_default_tensor_type('torch.FloatTensor')
 
 if opt.gpu != 0:
-    opt.device = opt.gpu
+    opt.device = opt.gpu-1
     print('Setting cuda device to {}. ({} Device available)'.format(opt.device, torch.cuda.device_count()))
     print('Options are: {}'.format(opt))
-    torch.cuda.set_device(opt.gpu)
+    torch.cuda.set_device(opt.gpu-1)
 
 # Set filename based on parameters
 opt.save_dir = utils.get_savedir(opt)
