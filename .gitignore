@@ -1,5 +1,12 @@
 venv/
 results/
 __pycache__/
+models/__pycache__
+dataloaders/__pycache__
+workspace.iml
 .idea/
+*.idea
+**/.idea/tasks.xml
+txtgen/
+text-generation.iml
 
