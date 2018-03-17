@@ -3,8 +3,8 @@ import utils
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 jobs = [
-    {'dataloader': 'single_file', 'model': 'char_rnn', 'batch_size': 64, 'lrt': 0.0005, 'epoch_size': 20,
-     'n_epochs': 2000, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 20}
+    {'dataloader': 'single_file', 'model': 'char_rnn', 'batch_size': 1000, 'lrt': 0.01, 'epoch_size': 100,
+     'n_epochs': 200, 'hidden_size_rnn': 50, 'n_layers_rnn': 2, 'sentence_len': 200}
 ]
 
 srun_args = ['']
