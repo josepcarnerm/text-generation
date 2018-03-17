@@ -53,7 +53,10 @@ def to_variable(gpu, sentence):
 
     var = zeros(gpu, [len(sentence)]).long()
     for i,c in enumerate(sentence):
-        var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
+        try:
+            var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
+        except:
+            var[i] = string.printable.index(' ')
 
     return var
 
