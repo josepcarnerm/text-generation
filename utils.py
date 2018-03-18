@@ -56,7 +56,7 @@ def to_variable(gpu, sentence):
         try:
             var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
         except ValueError as err:
-            print("Value error e: {}, {}".format(err, c))
+            print("Value error: {}, the culprit: \n{}\n".format(err, c))
 
     return var
 

@@ -25,6 +25,7 @@ parser.add_argument('-hidden_size_rnn', type=int, default=50, help='RNN hidden v
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 
 # Dataloader dependent settings
+parser.add_argument('-input_pretrained_vector', type=str, default='data/glove.6B/glove.6B.100d.txt', help='path to input text file for pretrained vectors')
 parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
 parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
 parser.add_argument('-sentence_len', type=int, default=200)
