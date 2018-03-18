@@ -3,7 +3,7 @@ import utils
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 jobs = [
-    {'dataloader': 'single_file', 'model': 'char_rnn', 'batch_size': 1000, 'lrt': 0.01, 'epoch_size': 100,
+    {'dataloader': 'single_file', 'model': 'char_rnn', 'batch_size': 200, 'lrt': 0.01, 'epoch_size': 100,
      'n_epochs': 200, 'hidden_size_rnn': 50, 'n_layers_rnn': 2, 'sentence_len': 200}
 ]
 
