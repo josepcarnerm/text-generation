@@ -6,6 +6,7 @@ __version__ = "CS224u, Stanford, Spring 2016"
 import sys
 import csv
 import numpy as np
+import torch
 
 def build(src_filename, delimiter=',', header=True, quoting=csv.QUOTE_MINIMAL):
     """Reads in matrices from CSV or space-delimited files.
@@ -46,7 +47,7 @@ def build(src_filename, delimiter=',', header=True, quoting=csv.QUOTE_MINIMAL):
     for line in reader:
         rownames.append(line[0])
         mat.append(np.array(list(map(float, line[1: ]))))
-    return (np.array(mat), rownames, colnames)
+    return (torch.FloatTensor(mat), rownames, colnames)
 
 
 def build_glove(src_filename):
@@ -69,7 +70,7 @@ def glove2dict(src_filename):
 
     """
     reader = csv.reader(open(src_filename), delimiter=' ', quoting=csv.QUOTE_NONE)
-    return {line[0]: np.array(list(map(float, line[1: ]))) for line in reader}
+    return {line[0]: torch.FloatTensor(list(map(float, line[1: ]))) for line in reader}
 
 
 def d_tanh(z):
@@ -79,8 +80,8 @@ def d_tanh(z):
 def softmax(z):
     """Softmax activation function. z should be a float or np.array."""
     # Increases numerical stability:
-    t = np.exp(z - np.max(z))
-    return t / np.sum(t)
+    t = np.exp(z - torch.max(z))
+    return t / torch.sum(t)
 
 def progress_bar(msg):
     """Simple over-writing progress bar."""

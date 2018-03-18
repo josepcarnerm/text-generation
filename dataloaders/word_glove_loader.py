@@ -1,12 +1,11 @@
-import unidecode
-from torch.utils.data import Dataset
-import re, spacy
+import os, re, spacy, torch
 import numpy as np
 
 from collections import defaultdict
 from torch.utils.data import Dataset
 
 import glove_utils
+from utils import is_remote
 
 class MyDataset(Dataset):
 
@@ -24,7 +23,15 @@ class MyDataset(Dataset):
 
         self.glv_dict = glove_utils.glove2dict(opt.input_pretrained_vector)
         print("Getting pretrained vectors from: {} ".format(opt.input_pretrained_vector))
-        self.words_matrix = self.get_pretrained_vectors()
+
+        if self.use_existing_wordvecs():
+            print("Loaded pretrained wordvecs from {}".format(self.saved_wordvecs))
+            self.words_matrix = torch.load(self.saved_wordvecs)
+        else:
+            self.words_matrix = self.get_pretrained_vectors()
+            print("Saved pretrained wordvecs to {}".format(self.saved_wordvecs))
+            torch.save(self.words_matrix, self.saved_wordvecs)
+
         print(self.words_matrix)
         print("Number of tokens in document = {}".format(self.len))
 
@@ -75,4 +82,23 @@ class MyDataset(Dataset):
         # set length and vocab size
         self.vocab_size = len(vocab)
         self.len = len(retVal)
-        return np.stack(retVal, axis=0)
+        return torch.stack(retVal)
+
+    # try to load pretrained word vector from file (to save time on local development)
+    def use_existing_wordvecs(self):
+
+        vec_dir = self.opt.wordvec_out_dir
+        pretrained_vec_dim = self.opt.input_pretrained_vector.split('/')[-1].split('.')[-2]
+        pretrained_vec_file = self.opt.input_pretrained_vector.split('/')[1]+"embeddings"+pretrained_vec_dim+".txt"
+        self.saved_wordvecs = os.path.join(vec_dir, pretrained_vec_file)
+
+        if self.opt.force_reload_wordvecs == 'yes':
+            return False
+
+        try:
+            file = open(self.saved_wordvecs, 'r')
+            file.close()
+            return True
+        except FileNotFoundError:
+            print("Unable to load {}. Doesn't exist or bad path.".format(self.input_file))
+            return False

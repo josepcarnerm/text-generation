@@ -23,12 +23,15 @@ parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, hel
 # Model dependent settings
 parser.add_argument('-hidden_size_rnn', type=int, default=50, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
+parser.add_argument('-dropout_rate', type=float, default=0.5, help='LSTM Dropout rate')
 
 # Dataloader dependent settings
 parser.add_argument('-input_pretrained_vector', type=str, default='data/glove.6B/glove.6B.100d.txt', help='path to input text file for pretrained vectors')
 parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
 parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
 parser.add_argument('-sentence_len', type=int, default=200)
+parser.add_argument('-wordvec_out_dir', type=str, default='data/', help='Path to save embeddings for easy loading')
+parser.add_argument('-force_reload_wordvecs', type=str, default='yes', help='Force reloading/recomputing of word vecs')
 
 opt = parser.parse_args()
 # --------------------------------------------------------------------------------------------------------------
