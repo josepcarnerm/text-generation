@@ -55,7 +55,7 @@ class Model(nn.Module):
     def init_hidden(self, batch_size):
         return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, self.opt.batch_size, self.opt.hidden_size_rnn))
 
-    def generate(self, prime_str='A', predict_len=100, temperature=0.8):
+    def test(self, prime_str='A', predict_len=100, temperature=0.8):
 
         hidden = self.init_hidden(1)
         prime_input = Variable(char_tensor(prime_str).unsqueeze(0))
