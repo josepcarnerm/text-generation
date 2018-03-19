@@ -127,6 +127,7 @@ def train(n_epochs):
         # Print example
         test_sample = model.test('Wh', 100)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
+        print(test_sample + '\n')
 
 # --------------------------------------------------------------------------------------------------------------
 
