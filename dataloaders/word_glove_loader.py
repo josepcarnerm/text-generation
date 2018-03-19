@@ -31,6 +31,8 @@ class MyDataset(Dataset):
             self.words_matrix = self.get_pretrained_vectors()
             print("Saved pretrained wordvecs to {}".format(self.saved_wordvecs))
             torch.save(self.words_matrix, self.saved_wordvecs)
+        self.len = self.words_matrix.size()[0]
+
 
         print(self.words_matrix)
         print("Number of tokens in document = {}".format(self.len))
@@ -81,7 +83,6 @@ class MyDataset(Dataset):
                 retVal.append(self.glv_dict.get(tok))
         # set length and vocab size
         self.vocab_size = len(vocab)
-        self.len = len(retVal)
         return torch.stack(retVal)
 
     # try to load pretrained word vector from file (to save time on local development)
