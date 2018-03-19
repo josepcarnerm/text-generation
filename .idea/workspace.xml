@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f1a328fc-5ae6-48bb-b28c-8d28d7ac3793" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dataloaders/single_file_char_tensor.py" afterPath="$PROJECT_DIR$/dataloaders/single_file_char_tensor.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/models/char_rnn_original.py" afterPath="$PROJECT_DIR$/models/char_rnn_original.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_jobs.py" afterPath="$PROJECT_DIR$/run_jobs.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/train.py" afterPath="$PROJECT_DIR$/train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -21,8 +17,8 @@
       <file leaf-file-name="train.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="69" column="0" lean-forward="true" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
+            <state relative-caret-position="200">
+              <caret line="118" column="61" lean-forward="true" selection-start-line="118" selection-start-column="61" selection-end-line="118" selection-end-column="61" />
               <folding>
                 <element signature="e#27#58#0" expanded="true" />
               </folding>
@@ -30,7 +26,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="single_file_char_tensor.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="single_file_char_tensor.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/dataloaders/single_file_char_tensor.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="375">
@@ -38,6 +34,16 @@
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="char_rnn.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/models/char_rnn.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="23" column="8" lean-forward="true" selection-start-line="23" selection-start-column="8" selection-end-line="23" selection-end-column="80" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -54,11 +60,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="char_rnn_original.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="char_rnn_original.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/models/char_rnn_original.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="168">
-              <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+            <state relative-caret-position="277">
+              <caret line="19" column="8" lean-forward="false" selection-start-line="19" selection-start-column="8" selection-end-line="19" selection-end-column="8" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -141,9 +147,9 @@
         <option value="$PROJECT_DIR$/results/batch_size=100-dataloader=single_file-epoch_size=1-hidden_size_rnn=50-lrt=0.01-model=char_rnn-n_epochs=200-n_layers_rnn=2-sentence_len=200/examples.txt" />
         <option value="$PROJECT_DIR$/utils.py" />
         <option value="$PROJECT_DIR$/run_jobs.py" />
-        <option value="$PROJECT_DIR$/models/char_rnn_original.py" />
         <option value="$PROJECT_DIR$/dataloaders/single_file_char_tensor.py" />
         <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/models/char_rnn_original.py" />
       </list>
     </option>
   </component>
@@ -698,16 +704,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/char_rnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="463">
-          <caret line="56" column="0" lean-forward="true" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-          <folding>
-            <element signature="e#27#47#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="690">
@@ -738,23 +734,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/char_rnn_original.py">
+    <entry file="file://$PROJECT_DIR$/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="23" column="0" lean-forward="false" selection-start-line="23" selection-start-column="0" selection-end-line="23" selection-end-column="0" />
+        <state relative-caret-position="200">
+          <caret line="118" column="61" lean-forward="true" selection-start-line="118" selection-start-column="61" selection-end-line="118" selection-end-column="61" />
           <folding>
-            <element signature="e#0#13#0" expanded="true" />
+            <element signature="e#27#58#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train.py">
+    <entry file="file://$PROJECT_DIR$/models/char_rnn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="69" column="0" lean-forward="true" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
-          <folding>
-            <element signature="e#27#58#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="255">
+          <caret line="23" column="8" lean-forward="true" selection-start-line="23" selection-start-column="8" selection-end-line="23" selection-end-column="80" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -764,6 +758,16 @@
           <caret line="25" column="14" lean-forward="true" selection-start-line="25" selection-start-column="14" selection-end-line="25" selection-end-column="14" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/char_rnn_original.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="277">
+          <caret line="19" column="8" lean-forward="false" selection-start-line="19" selection-start-column="8" selection-end-line="19" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>

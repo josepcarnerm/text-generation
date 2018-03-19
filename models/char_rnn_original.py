@@ -11,11 +11,14 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.opt = opt
+
         self.encoder = nn.Embedding(N_CHARS, self.opt.hidden_size_rnn)
         self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, N_CHARS)
 
         self.criterion = nn.CrossEntropyLoss()
+
+        self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
 
     def forward(self, input, hidden):
