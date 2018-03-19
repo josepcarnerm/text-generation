@@ -22,9 +22,10 @@ class Model(nn.Module):
 
 
     def forward(self, input, hidden):
+        batch_size = input.size(0)
         encoded = self.encoder(input)
-        output, hidden = self.rnn(encoded.view(1, self.opt.batch_size, -1), hidden)
-        output = self.decoder(output.view(self.opt.batch_size, -1))
+        output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
+        output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
     def forward2(self, input, hidden):
@@ -65,6 +66,7 @@ class Model(nn.Module):
 
         # Use priming string to "build up" hidden state
         for p in range(len(prime_str) - 1):
+            import pdb; pdb.set_trace()
             _, hidden = self.forward(prime_input[:, p], hidden)
 
         inp = prime_input[:, -1]
