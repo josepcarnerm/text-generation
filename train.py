@@ -12,8 +12,8 @@ import utils
 # Training settings
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
-parser.add_argument('-dataloader', type=str, default='single_file')  # Must be a valid file name in dataloaders/ folder
-parser.add_argument('-model', type=str, default='char_rnn')  # Must be a valid file name in models/ folder
+parser.add_argument('-dataloader', type=str, default='single_file_char_tensor')  # Must be a valid file name in dataloaders/ folder
+parser.add_argument('-model', type=str, default='char_rnn_original')  # Must be a valid file name in models/ folder
 parser.add_argument('-batch_size', type=int, default=100)
 parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)

@@ -34,6 +34,12 @@ class Model(nn.Module):
     def evaluate(self, batch):
 
         inp, target = batch
+        inp = Variable(inp)
+        target = Variable(target)
+        if is_remote():
+            inp = inp.cuda()
+            target = target.cuda()
+
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
 
@@ -44,7 +50,7 @@ class Model(nn.Module):
         return loss / self.opt.sentence_len
 
     def init_hidden(self, batch_size):
-        return zeros(gpu=is_remote(), sizes=(self.n_layers, batch_size, self.hidden_size))
+        return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, self.opt.batch_size, self.opt.hidden_size_rnn))
 
     def generate(self, prime_str='A', predict_len=100, temperature=0.8):
 

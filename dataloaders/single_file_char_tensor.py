@@ -17,20 +17,26 @@ class MyDataset(Dataset):
 
     def __getitem__(self, index):
         random.seed(index)
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len)
-        for bi in range(self.opt.batch_size):
-            start_index = random.randint(0, self.len - self.opt.sentence_len)
-            end_index = start_index + self.opt.sentence_len + 1
-            chunk = self.file[start_index:end_index]
-            inp[bi] = char_tensor(chunk[:-1])
-            target[bi] = char_tensor(chunk[1:])
-        inp = Variable(inp)
-        target = Variable(target)
-        if is_remote():
-            inp = inp.cuda()
-            target = target.cuda()
+        inp = torch.LongTensor(self.opt.sentence_len)
+        target = torch.LongTensor(self.opt.sentence_len)
+        start_index = random.randint(0, self.len - self.opt.sentence_len)
+        end_index = start_index + self.opt.sentence_len + 1
+        chunk = self.file[start_index:end_index]
+        inp = char_tensor(chunk[:-1])
+        target = char_tensor(chunk[1:])
         return inp, target
+
+    # def __getitem__(self, index):
+    #     random.seed(index)
+    #     inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len)
+    #     target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len)
+    #     for bi in range(self.opt.batch_size):
+    #         start_index = random.randint(0, self.len - self.opt.sentence_len)
+    #         end_index = start_index + self.opt.sentence_len + 1
+    #         chunk = self.file[start_index:end_index]
+    #         inp[bi] = char_tensor(chunk[:-1])
+    #         target[bi] = char_tensor(chunk[1:])
+    #     return inp, target
 
     def __len__(self):
         return self.len-self.opt.sentence_len
