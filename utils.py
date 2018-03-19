@@ -2,6 +2,8 @@ import os, datetime, torch, time, socket, string, math
 
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
+N_CHARS = len(string.printable)
+
 def move(gpu, tensor_list):
     for t in tensor_list:
         t.cuda() if gpu else t.cpu()
@@ -70,3 +72,13 @@ def time_since(since):
     m = math.floor(s / 60)
     s -= m * 60
     return '%dm %ds' % (m, s)
+
+
+def char_tensor(string):
+    tensor = torch.zeros(len(string)).long()
+    for c in range(len(string)):
+        try:
+            tensor[c] = all_characters.index(string[c])
+        except:
+            continue
+    return tensor

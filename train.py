@@ -63,14 +63,13 @@ test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batc
 def train_epoch(nsteps):
     total_loss = 0
     model.train()
-    for iter, sentences in enumerate(train_dataloader):
-        if iter==0:
-            print(sentences[0])
+    for iter, batch in enumerate(train_dataloader):
+        print(iter)
         optimizer.zero_grad()
         model.zero_grad()
 
         # Forward step
-        loss_batch = model.evaluate(sentences)
+        loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0]/opt.batch_size
 
         # Backward step
@@ -85,10 +84,10 @@ def train_epoch(nsteps):
 def test_epoch(nsteps):
     total_loss = 0
     model.eval()
-    for iter, sentences in enumerate(test_dataloader):
+    for iter, batch in enumerate(test_dataloader):
 
         # Forward step
-        loss_batch = model.evaluate(sentences)
+        loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.batch_size
 
         if iter == nsteps:
