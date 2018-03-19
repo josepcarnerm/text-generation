@@ -21,7 +21,7 @@ parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 
 # Model dependent settings
-parser.add_argument('-hidden_size_rnn', type=int, default=50, help='RNN hidden vector size')
+parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 
 # Dataloader dependent settings
