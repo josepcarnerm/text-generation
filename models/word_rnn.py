@@ -23,7 +23,7 @@ class Model(nn.Module):
                             num_layers=self.opt.n_layers_rnn, dropout=self.opt.dropout_rate)
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.opt.emb_dim)
 
-        self.submodules = [self.encoder, self.gru, self.decoder, self.criterion]
+        self.submodules = [self.encoder, self.lstm, self.decoder, self.criterion]
         move(gpu=is_remote(), tensor_list=self.submodules)
 
     def init_hidden(self, batch_size):
