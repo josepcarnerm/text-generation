@@ -66,7 +66,6 @@ class Model(nn.Module):
 
         # Use priming string to "build up" hidden state
         for p in range(len(prime_str) - 1):
-            import pdb; pdb.set_trace()
             _, hidden = self.forward(prime_input[:, p], hidden)
 
         inp = prime_input[:, -1]
