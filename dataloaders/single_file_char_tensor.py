@@ -16,7 +16,7 @@ class MyDataset(Dataset):
         self.len = len(self.file)
 
     def __getitem__(self, index):
-        random.seed(index)
+        # random.seed(index)
         inp = torch.LongTensor(self.opt.sentence_len)
         target = torch.LongTensor(self.opt.sentence_len)
         start_index = random.randint(0, self.len - self.opt.sentence_len)

@@ -48,7 +48,7 @@ class Model(nn.Module):
 
         for c in range(self.opt.sentence_len):
             output, hidden = self.forward(inp[:, c], hidden)
-            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, c]) / self.opt.sentence_len
+            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, c])
 
         return loss
 
@@ -83,6 +83,7 @@ class Model(nn.Module):
             inp = Variable(char_tensor(predicted_char).unsqueeze(0))
             if is_remote():
                 inp = inp.cuda()
+            import pdb; pdb.set_trace()
 
         return predicted
 
