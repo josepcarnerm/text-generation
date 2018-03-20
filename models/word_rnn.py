@@ -7,33 +7,33 @@ from utils import is_remote, zeros
 
 class Model(nn.Module):
 
-    N_CHARS = len(string.printable)
-    ALL_CHARS = string.printable
-
     def __init__(self, opt):
         super(Model, self).__init__()
 
         self.opt = opt
+        self.word_dict = torch.load(self.opt.input_file_train + '.word_dict')
+        self.inverted_word_dict = {i:w for w,i in self.word_dict.items()}
+        self.N_WORDS = len(self.word_dict)
 
-        self.encoder = nn.Embedding(self.N_CHARS, self.opt.hidden_size_rnn)
+        self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
         self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
-        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_CHARS)
+        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
         self.criterion = nn.CrossEntropyLoss()
 
         self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
-    def from_string_to_tensor(self, string):
-        tensor = torch.zeros(len(string)).long()
-        for c in range(len(string)):
+    def from_string_to_tensor(self, sentence):
+        tensor = torch.zeros(len(sentence)).long()
+        for word_i in range(len(sentence)):
             try:
-                tensor[c] = self.ALL_CHARS.index(string[c])
+                tensor[word_i] = self.word_dict[sentence[word_i]]
             except:
                 continue
         return tensor
 
     def from_predicted_index_to_string(self, index):
-        return self.ALL_CHARS[index]
+        return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
         batch_size = input.size(0)
@@ -50,11 +50,13 @@ class Model(nn.Module):
 
     def evaluate(self, batch):
 
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len)
+        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len+1)
+        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len+1)
         for i, sentence in enumerate(batch):
-            inp[i] = self.from_string_to_tensor(sentence[:-1])
-            target[i] = self.from_string_to_tensor(sentence[1:])
+            inp[:,i] = self.from_string_to_tensor(sentence)
+            target[:,i] = self.from_string_to_tensor(sentence)
+        inp = inp[:, :-1]
+        target = target[:, 1:]
         inp = Variable(inp)
         target = Variable(target)
         if is_remote():
@@ -64,9 +66,9 @@ class Model(nn.Module):
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
 
-        for c in range(self.opt.sentence_len):
-            output, hidden = self.forward(inp[:, c], hidden)
-            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, c])
+        for w in range(self.opt.sentence_len):
+            output, hidden = self.forward(inp[:, w], hidden)
+            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
         return loss
 
