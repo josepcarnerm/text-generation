@@ -3,6 +3,7 @@ import os, datetime, torch, time, socket, string, math
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 N_CHARS = len(string.printable)
+ALL_CHARS = string.printable
 
 def move(gpu, tensor_list):
     for t in tensor_list:
@@ -78,7 +79,7 @@ def char_tensor(string):
     tensor = torch.zeros(len(string)).long()
     for c in range(len(string)):
         try:
-            tensor[c] = all_characters.index(string[c])
+            tensor[c] = ALL_CHARS.index(string[c])
         except:
             continue
     return tensor
