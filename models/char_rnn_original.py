@@ -83,7 +83,6 @@ class Model(nn.Module):
             inp = Variable(char_tensor(predicted_char).unsqueeze(0))
             if is_remote():
                 inp = inp.cuda()
-            import pdb; pdb.set_trace()
 
         return predicted
 
