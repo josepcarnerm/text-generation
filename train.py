@@ -64,7 +64,6 @@ def train_epoch(nsteps):
     total_loss = 0
     model.train()
     for iter, batch in enumerate(train_dataloader):
-        print(iter)
         optimizer.zero_grad()
         model.zero_grad()
 
