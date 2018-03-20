@@ -48,9 +48,9 @@ class Model(nn.Module):
 
         for c in range(self.opt.sentence_len):
             output, hidden = self.forward(inp[:, c], hidden)
-            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, c])
+            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, c]) / self.opt.sentence_len
 
-        return loss / self.opt.sentence_len
+        return loss
 
     def init_hidden(self, batch_size):
         return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
