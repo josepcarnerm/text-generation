@@ -1,6 +1,9 @@
+import torch
 import unidecode
+from torch.autograd import Variable
 from torch.utils.data import Dataset
-
+import random
+from utils import ALL_CHARS, is_remote
 
 class MyDataset(Dataset):
 
@@ -13,7 +16,11 @@ class MyDataset(Dataset):
         self.len = len(self.file)
 
     def __getitem__(self, index):
-        return self.file[index:(index+self.opt.sentence_len)]
+        random.seed(index)
+        start_index = random.randint(0, self.len - self.opt.sentence_len)
+        end_index = start_index + self.opt.sentence_len + 1
+        chunk = self.file[start_index:end_index]
+        return chunk
 
     def __len__(self):
         return self.len-self.opt.sentence_len

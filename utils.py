@@ -51,21 +51,21 @@ def zeros(gpu, sizes):
     return v
 
 
-def to_variable(gpu, sentence):
-    # Converts a sentence to a pytorch variable of dimension 1
-
-    var = zeros(gpu, [len(sentence)]).long()
-    for i,c in enumerate(sentence):
-        try:
-            var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
-        except:
-            var[i] = string.printable.index(' ')
-
-    return var
-
-
-def to_string(variable):
-    return ''.join([string.printable[index.data[0]] for index in variable])
+# def to_variable(gpu, sentence):
+# #     # Converts a sentence to a pytorch variable of dimension 1
+# #
+# #     var = zeros(gpu, [len(sentence)]).long()
+# #     for i,c in enumerate(sentence):
+# #         try:
+# #             var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
+# #         except:
+# #             var[i] = string.printable.index(' ')
+# #
+# #     return var
+# #
+# #
+# # def to_string(variable):
+# #     return ''.join([string.printable[index.data[0]] for index in variable])
 
 
 def time_since(since):
@@ -74,12 +74,3 @@ def time_since(since):
     s -= m * 60
     return '%dm %ds' % (m, s)
 
-
-def char_tensor(string):
-    tensor = torch.zeros(len(string)).long()
-    for c in range(len(string)):
-        try:
-            tensor[c] = ALL_CHARS.index(string[c])
-        except:
-            continue
-    return tensor

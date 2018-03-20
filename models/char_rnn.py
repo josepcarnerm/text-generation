@@ -1,80 +1,99 @@
-# External modules imports
-import string, torch
+import string
+
+import torch
 import torch.nn as nn
 from torch.autograd import Variable
-
-
-# Project imports
-from utils import move, zeros, to_variable, to_string, is_remote
-
+from utils import is_remote, zeros
 
 class Model(nn.Module):
 
+    N_CHARS = len(string.printable)
+    ALL_CHARS = string.printable
+
     def __init__(self, opt):
         super(Model, self).__init__()
+
         self.opt = opt
+
+        self.encoder = nn.Embedding(self.N_CHARS, self.opt.hidden_size_rnn)
+        self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
+        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_CHARS)
+
         self.criterion = nn.CrossEntropyLoss()
 
-        self.opt.n_characters = len(string.printable)
+        self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
-        self.encoder = nn.Embedding(self.opt.n_characters, self.opt.hidden_size_rnn)
-        self.gru = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
-        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.opt.n_characters)
+    def from_string_to_char_tensor(self, string):
+        tensor = torch.zeros(len(string)).long()
+        for c in range(len(string)):
+            try:
+                tensor[c] = self.ALL_CHARS.index(string[c])
+            except:
+                continue
+        return tensor
 
-        self.submodules = [self.encoder, self.gru, self.decoder, self.criterion]
-        move(gpu=is_remote(), tensor_list=self.submodules)
+    def forward(self, input, hidden):
+        batch_size = input.size(0)
+        encoded = self.encoder(input)
+        output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
+        output = self.decoder(output.view(batch_size, -1))
+        return output, hidden
+
+    def forward2(self, input, hidden):
+        encoded = self.encoder(input.view(1, -1))
+        output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
+        output = self.decoder(output.view(1, -1))
+        return output, hidden
+
+    def evaluate(self, batch):
+
+        inp, target = batch
+        inp = Variable(inp)
+        target = Variable(target)
+        if is_remote():
+            inp = inp.cuda()
+            target = target.cuda()
+
+        hidden = self.init_hidden(self.opt.batch_size)
+        loss = 0
+
+        for c in range(self.opt.sentence_len):
+            output, hidden = self.forward(inp[:, c], hidden)
+            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, c])
+
+        return loss
 
     def init_hidden(self, batch_size):
-        return zeros(gpu=is_remote(), sizes=[self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn])
+        return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
 
-    def forward(self, sentences, num_chars_encoder=0):
+    def test(self, prime_str='A', predict_len=100, temperature=0.8):
 
-        input = torch.stack([to_variable(gpu=is_remote(), sentence=sentence) for sentence in sentences])
-        h = self.init_hidden(self.opt.batch_size)
+        hidden = self.init_hidden(1)
+        prime_input = Variable(self.from_string_to_char_tensor(prime_str).unsqueeze(0))
 
+        if is_remote():
+            prime_input = prime_input.cuda()
+        predicted = prime_str
 
-        input_emb = self.encoder(input).permute(1, 0, 2)\
-                        .contiguous()\
-                        .view(self.opt.sentence_len, self.opt.batch_size, self.opt.hidden_size_rnn)
-        output_rnn, h = self.gru(input_emb, h)
-        output = self.decoder(output_rnn)\
-                     .permute(1,0,2)\
-                     .contiguous()\
-                     .view(self.opt.batch_size, self.opt.sentence_len, self.opt.n_characters)
+        # Use priming string to "build up" hidden state
+        for p in range(len(prime_str) - 1):
+            _, hidden = self.forward(prime_input[:, p], hidden)
 
-        preds = output[:,num_chars_encoder:-1]
+        inp = prime_input[:, -1]
 
-        return preds
+        for p in range(predict_len):
+            output, hidden = self.forward(inp, hidden)
 
-    def evaluate(self, sentences):
-        loss = 0
-        preds = self.forward(sentences)
-        targets = torch.stack([to_variable(gpu=is_remote(), sentence=sentence) for sentence in sentences])
-        targets = targets[:, 1:]
-        for i in range(targets.size(1)):  # First pred char is not eval
-            loss += self.criterion(preds[:,i], targets[:,i])
-        return loss/targets.size(1)
+            # Sample from the network as a multinomial distribution
+            output_dist = output.data.view(-1).div(temperature).exp()
+            top_i = torch.multinomial(output_dist, 1)[0]
 
-    def test(self, start, predict_len=100, temperature=0.8):
+            # Add predicted character to string and use as next input
+            predicted_char = string.printable[top_i]
+            predicted += predicted_char
+            inp = Variable(char_tensor(predicted_char).unsqueeze(0))
+            if is_remote():
+                inp = inp.cuda()
 
-        start = to_variable(gpu=is_remote(), sentence=start)
-        h = self.init_hidden(1)
-
-        for c in start:
-            c = c.view(1, 1)
-            embedded_cs = self.encoder(c)
-            output, h = self.gru(embedded_cs.view(1, 1, self.opt.hidden_size_rnn), h)
-
-        preds = []
-        output_dist = output.view(-1).div(temperature).exp()
-        c = torch.multinomial(output_dist, 1)
-        for _ in range(predict_len):
-            c = c.view(1, 1)
-            embedded_cs = self.encoder(c)
-            output, h = self.gru(embedded_cs.view(1, 1, self.opt.hidden_size_rnn), h)
-            output_dist = output.view(-1).div(temperature).exp()
-            c = torch.multinomial(output_dist, 1)
-            preds.append(to_string(c))
-
-        return ''.join(preds)
+        return predicted
 
