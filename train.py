@@ -64,13 +64,13 @@ def train_epoch(nsteps):
     total_loss = 0
     model.train()
     for iter, batch in enumerate(train_dataloader):
+        print(iter)
         optimizer.zero_grad()
         model.zero_grad()
 
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0]/opt.sentence_len
-        print(loss_batch)
 
         # Backward step
         loss_batch.backward()
