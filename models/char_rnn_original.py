@@ -53,7 +53,7 @@ class Model(nn.Module):
         return loss / self.opt.sentence_len
 
     def init_hidden(self, batch_size):
-        return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, self.opt.batch_size, self.opt.hidden_size_rnn))
+        return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
 
     def test(self, prime_str='A', predict_len=100, temperature=0.8):
 
