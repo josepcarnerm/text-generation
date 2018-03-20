@@ -2,6 +2,9 @@ import os, datetime, torch, time, socket, string, math
 
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
+N_CHARS = len(string.printable)
+ALL_CHARS = string.printable
+
 def move(gpu, tensor_list):
     for t in tensor_list:
         t.cuda() if gpu else t.cpu()
@@ -48,21 +51,21 @@ def zeros(gpu, sizes):
     return v
 
 
-def to_variable(gpu, sentence):
-    # Converts a sentence to a pytorch variable of dimension 1
-
-    var = zeros(gpu, [len(sentence)]).long()
-    for i,c in enumerate(sentence):
-        try:
-            var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
-        except:
-            var[i] = string.printable.index(' ')
-
-    return var
-
-
-def to_string(variable):
-    return ''.join([string.printable[index.data[0]] for index in variable])
+# def to_variable(gpu, sentence):
+# #     # Converts a sentence to a pytorch variable of dimension 1
+# #
+# #     var = zeros(gpu, [len(sentence)]).long()
+# #     for i,c in enumerate(sentence):
+# #         try:
+# #             var[i] = string.printable.index(c)  # Not One-hot encoding: torch.nn.Embeding layer will transform in one-hot internally
+# #         except:
+# #             var[i] = string.printable.index(' ')
+# #
+# #     return var
+# #
+# #
+# # def to_string(variable):
+# #     return ''.join([string.printable[index.data[0]] for index in variable])
 
 
 def time_since(since):
@@ -70,3 +73,4 @@ def time_since(since):
     m = math.floor(s / 60)
     s -= m * 60
     return '%dm %ds' % (m, s)
+

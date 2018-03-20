@@ -12,8 +12,8 @@ import utils
 # Training settings
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
-parser.add_argument('-dataloader', type=str, default='single_file')  # Must be a valid file name in dataloaders/ folder
-parser.add_argument('-model', type=str, default='char_rnn')  # Must be a valid file name in models/ folder
+parser.add_argument('-dataloader', type=str, default='single_file_str')  # Must be a valid file name in dataloaders/ folder
+parser.add_argument('-model', type=str, default='char_rnn_new')  # Must be a valid file name in models/ folder
 parser.add_argument('-batch_size', type=int, default=100)
 parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
@@ -21,7 +21,7 @@ parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 
 # Model dependent settings
-parser.add_argument('-hidden_size_rnn', type=int, default=50, help='RNN hidden vector size')
+parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 
 # Dataloader dependent settings
@@ -63,15 +63,14 @@ test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batc
 def train_epoch(nsteps):
     total_loss = 0
     model.train()
-    for iter, sentences in enumerate(train_dataloader):
-        if iter==0:
-            print(sentences[0])
+    for iter, batch in enumerate(train_dataloader):
+        print(iter)
         optimizer.zero_grad()
         model.zero_grad()
 
         # Forward step
-        loss_batch = model.evaluate(sentences)
-        total_loss += loss_batch.data[0]/opt.batch_size
+        loss_batch = model.evaluate(batch)
+        total_loss += loss_batch.data[0]/opt.sentence_len
 
         # Backward step
         loss_batch.backward()
@@ -85,10 +84,10 @@ def train_epoch(nsteps):
 def test_epoch(nsteps):
     total_loss = 0
     model.eval()
-    for iter, sentences in enumerate(test_dataloader):
+    for iter, batch in enumerate(test_dataloader):
 
         # Forward step
-        loss_batch = model.evaluate(sentences)
+        loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.batch_size
 
         if iter == nsteps:
@@ -128,6 +127,7 @@ def train(n_epochs):
         # Print example
         test_sample = model.test('Wh', 100)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
+        print(test_sample + '\n')
 
 # --------------------------------------------------------------------------------------------------------------
 

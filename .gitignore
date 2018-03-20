@@ -9,4 +9,5 @@ workspace.iml
 **/.idea/tasks.xml
 txtgen/
 text-generation.iml
+ .idea/workspace.xml
 
