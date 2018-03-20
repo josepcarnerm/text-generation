@@ -76,7 +76,7 @@ class Model(nn.Module):
     def test(self, prime_str='A', predict_len=100, temperature=0.8):
 
         hidden = self.init_hidden(1)
-        prime_input = Variable(self.from_string_to_char_tensor(prime_str).unsqueeze(0))
+        prime_input = Variable(self.from_string_to_tensor(prime_str).unsqueeze(0))
 
         if is_remote():
             prime_input = prime_input.cuda()
