@@ -1,1 +1,3 @@
 unidecode
+nltk
+textblob
