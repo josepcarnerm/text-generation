@@ -1,20 +1,24 @@
 import os, datetime, torch, time, socket, string, math
+from textblob import TextBlob as tb
 
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 N_CHARS = len(string.printable)
 ALL_CHARS = string.printable
 
+
 def move(gpu, tensor_list):
     for t in tensor_list:
         t.cuda() if gpu else t.cpu()
-
 
 def get_savedir(opt):
     # Whenever you add a new model/dataloader, you need to modify this to make sure parameters relying on other
     # models/dataloaders don't appear in the save dir
 
     ATTR_DONT_INCLUDE_IN_SAVEDIR = ['input_file_train', 'input_file_test', 'seed', 'gpu']
+
+    if opt.model != 'word_rnn_topic':
+        ATTR_DONT_INCLUDE_IN_SAVEDIR.append('loss_alpha')
 
     savedir = RESULTS_DIR_LOCAL if is_local() else RESULTS_DIR_REMOTE
     savedir = savedir + ('/' if not savedir.endswith('/') else '')
