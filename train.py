@@ -130,7 +130,7 @@ def train(n_epochs):
                       (i+1)*opt.epoch_size, train_loss[-1], valid_loss[-1], best_valid_loss, opt.lrt)
         if opt.model == 'word_rnn_topic':
             str_debug = 'Average reconstruction loss: {}, average topic closeness loss: {}'.format(
-                model.get_avg_losses[0], model.get_avg_losses[1]
+                model.get_avg_losses()[0], model.get_avg_losses()[1]
             )
             utils.log(opt.save_dir + 'logs.txt', str_debug, utils.time_since(start))
         print(log_string)
