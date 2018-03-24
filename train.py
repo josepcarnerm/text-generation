@@ -9,25 +9,33 @@ import utils
 
 
 # PARAMETERS ----------------------------------------------------------------------------------------------------
-# Training settings
+#####################
+# Training settings #
+#####################
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
-parser.add_argument('-dataloader', type=str, default='single_file_str')  # Must be a valid file name in dataloaders/ folder
-parser.add_argument('-model', type=str, default='char_rnn')  # Must be a valid file name in models/ folder
+parser.add_argument('-dataloader', type=str, default='single_file_str_words')  # Must be a valid file name in dataloaders/ folder
+parser.add_argument('-model', type=str, default='word_rnn_topic')  # Must be a valid file name in models/ folder
 parser.add_argument('-batch_size', type=int, default=100)
 parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 
-# Model dependent settings
+############################
+# Model dependent settings #
+############################
 parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
+# Word rnn topic dependent parameters
+parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
 
-# Dataloader dependent settings
+#################################
+# Dataloader dependent settings #
+#################################
 parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
 parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
-parser.add_argument('-sentence_len', type=int, default=200)
+parser.add_argument('-sentence_len', type=int, default=20)
 
 opt = parser.parse_args()
 # --------------------------------------------------------------------------------------------------------------
@@ -120,6 +128,11 @@ def train(n_epochs):
         # Print log string
         log_string = ('iter: {:d}, train_loss: {:0.6f}, valid_loss: {:0.6f}, best_valid_loss: {:0.6f}, lr: {:0.5f}').format(
                       (i+1)*opt.epoch_size, train_loss[-1], valid_loss[-1], best_valid_loss, opt.lrt)
+        if opt.model == 'word_rnn_topic':
+            str_debug = 'Average reconstruction loss: {}, average topic closeness loss: {}'.format(
+                model.get_avg_losses[0], model.get_avg_losses[1]
+            )
+            utils.log(opt.save_dir + 'logs.txt', str_debug, utils.time_since(start))
         print(log_string)
         utils.log(opt.save_dir + 'logs.txt', log_string, utils.time_since(start))
 
