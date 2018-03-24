@@ -1,5 +1,8 @@
 import string
 
+import nltk
+nltk.download('wordnet')
+
 import numpy
 import torch
 import torch.nn as nn
