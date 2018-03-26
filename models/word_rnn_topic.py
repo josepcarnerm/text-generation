@@ -1,5 +1,8 @@
 import string
 
+import nltk
+nltk.download('wordnet')
+
 import numpy
 import torch
 import torch.nn as nn
@@ -42,16 +45,10 @@ class Model(nn.Module):
         return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
-        batch_size = input.size(0)
+        batch_size = input.size(0)  # Will be self.opt.batch_size at train time, 1 at test time
         encoded = self.encoder(input)
-        output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
+        output, hidden = self.rnn(encoded.contiguous().view(1, batch_size, -1), hidden.contiguous())
         output = self.decoder(output.view(batch_size, -1))
-        return output, hidden
-
-    def forward2(self, input, hidden):
-        encoded = self.encoder(input.view(1, -1))
-        output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
-        output = self.decoder(output.view(1, -1))
         return output, hidden
 
     def closeness_to_topics(self, words_weights, topics):
@@ -83,10 +80,11 @@ class Model(nn.Module):
 
         # Is noun, adjective, verb or adverb?
         is_nava = lambda word: len(wn.synsets(word)) != 0
+        batch_size = len(batch[0])
 
         # Select "topic" as the least common noun, verb, adjective or adverb in each sentence
-        topics = torch.LongTensor(self.opt.batch_size, 1)
-        for i in range(len(batch[0])):
+        topics = torch.LongTensor(batch_size, 1)
+        for i in range(batch_size):
             sentence = [batch[j][i] for j in range(len(batch))]
             words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word)])
             least_common_word = words_sorted[0][1] if len(words_sorted) > 0 else sentence[0]
@@ -120,7 +118,9 @@ class Model(nn.Module):
         loss_topic = 0
 
         # Topic is provided as an initialization to the hidden state
-        hidden = self.encoder(topics)
+
+        hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1)\
+                      .permute(1, 0, 2)  # N_layers x batch_size x N_hidden
 
         # Encode/Decode sentence
         loss_topic_total_weight = 0
@@ -160,7 +160,9 @@ class Model(nn.Module):
     def test(self, prime_words, predict_len, temperature=0.8):
 
         topic = self.select_topics([['happy']])
-        hidden = self.encoder(topic)
+
+        hidden = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
+                      .permute(1, 0, 2)  # N_layers x 1 x N_hidden
 
         prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 

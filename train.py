@@ -77,7 +77,7 @@ def train_epoch(nsteps):
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0]/opt.sentence_len
+        total_loss += loss_batch.data[0] / opt.sentence_len
 
         # Backward step
         loss_batch.backward()
@@ -95,7 +95,7 @@ def test_epoch(nsteps):
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0] / opt.batch_size
+        total_loss += loss_batch.data[0] / opt.sentence_len
 
         if iter == nsteps:
             break
@@ -130,7 +130,7 @@ def train(n_epochs):
                       (i+1)*opt.epoch_size, train_loss[-1], valid_loss[-1], best_valid_loss, opt.lrt)
         if opt.model == 'word_rnn_topic':
             str_debug = 'Average reconstruction loss: {}, average topic closeness loss: {}'.format(
-                model.get_avg_losses[0], model.get_avg_losses[1]
+                model.get_avg_losses()[0], model.get_avg_losses()[1]
             )
             utils.log(opt.save_dir + 'logs.txt', str_debug, utils.time_since(start))
         print(log_string)
