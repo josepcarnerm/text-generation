@@ -77,7 +77,7 @@ def train_epoch(nsteps):
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0]/opt.sentence_len
+        total_loss += loss_batch.data[0] / opt.sentence_len
 
         # Backward step
         loss_batch.backward()
@@ -95,7 +95,7 @@ def test_epoch(nsteps):
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0] / opt.batch_size
+        total_loss += loss_batch.data[0] / opt.sentence_len
 
         if iter == nsteps:
             break
