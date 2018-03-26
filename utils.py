@@ -35,6 +35,7 @@ def get_savedir(opt):
 
 
 def is_remote():
+    return True
     return 'nyu' in socket.gethostname()
 
 

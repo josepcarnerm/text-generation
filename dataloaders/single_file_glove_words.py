@@ -1,4 +1,4 @@
-import torch, random, os, re
+import torch, random, os, re, pdb
 from torch.utils.data import Dataset
 from collections import Counter
 
@@ -27,21 +27,24 @@ class MyDataset(Dataset):
         if not self.opt.glove_dir:
             self.opt.glove_dir = './data/glove.6B/glove.6B.100d.txt'
 
-        self.glv = build_glove(self.opt.glove_dir)
         self.glv_dict = glove2dict(self.opt.glove_dir)
 
         self.create_word_dict()
         self.create_word_count()
+
+
         self.len = len(self.words)
 
     def create_word_dict(self):
         word_dict_file = self.opt.input_file_train + '.g_word_dict'
         if not os.path.isfile(word_dict_file):
-            word_dict = {w: word_to_idx(w, self.glv_dict) for w in set(self.words)}
+            pdb.set_trace()
+
+            word_dict = {w: self.glv_dict.get(w) for w in set(self.words)}
             torch.save(word_dict, word_dict_file)
 
     def create_word_count(self):
-        word_count_file = self.opt.input_file_train + '.g_word_count'
+        word_count_file = self.opt.input_file_train + '.word_count'
         if not os.path.isfile(word_count_file):
             word_count = Counter(self.words)
             torch.save(word_count, word_count_file)
