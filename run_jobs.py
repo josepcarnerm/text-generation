@@ -4,8 +4,10 @@ from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 jobs = [
 
-    {'dataloader': 'single_file_str_words', 'model': 'word_rnn_reuse_output', 'batch_size': 10, 'lrt': 0.01,
-     'epoch_size': 1, 'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20},
+    {'dataloader': 'single_file_str_words', 'model': 'word_rnn_topic', 'batch_size': 10, 'lrt': 0.01, 'epoch_size': 1,
+     'n_epochs': 400, 'hidden_size_rnn': 11, 'n_layers_rnn': 2, 'sentence_len': 5, 'loss_alpha': 0.15},
+    # {'dataloader': 'single_file_str_words', 'model': 'word_rnn_reuse_output', 'batch_size': 10, 'lrt': 0.01,
+    #  'epoch_size': 1, 'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20},
 
 
     # {'dataloader': 'single_file_str_words', 'model': 'word_rnn', 'batch_size': 500, 'lrt': 0.01, 'epoch_size': 100,
