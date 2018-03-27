@@ -1,0 +1,25 @@
+Things to be done:
+ - Define standard, shared, objective loss to measure the results (if possible) - besides human assessment.
+ - Define a better communication protocol for team members to share results / coordinate.
+ - Define a protocol on how to run experiments: what to delete/ not delete from server (in other words, how we decide
+   whether an experiment is gonna be in the final paper or not?), and how to show results (what to plot/keep).
+
+Things to try:
+ - Offline pretrained embeddings
+ - Other frequency measurements rather than raw counts for weighting the loss and for selecting the topic
+ - Convolutional layer before LSTM
+ - Attention model
+ - Have one topic per each RNN layer and compute the total topic loss as the average of "topic losses" against each topic
+ - No synonyms used for topic loss.
+ - Topic Loss analysis: Which words are we picking as topics? How many synonyms does each topic have on average?
+   How is each word contributing to the topic loss (plot concrete examples)?
+ - Think / define new ways of: selecting a "topic" and computing the loss againt the topic.
+
+Proposed way to proceed (Josep):
+ - Work on a couple/three more models for text generation (attention, pretrained embeddings, convolutional), analyze which works best,
+   and then move to playing with topic stuff using these different models.
+ - More communication through messenger: updates on what everyone is working need to be more constant, meet in person if required
+ - General philosophy: more agile, more communication, more sort-term objectives that can be constantly redefined and communicated
+ - More coordination: everytime someone is "free", let's all discuss and agree on what he can "pick" from the list.
+ - Everything we want to try, we put it in the list above, remove when it's done.
+ - More use of office hours and check if we are in the right direction (once per week)? (Maybe asking in class instead of office hours)
