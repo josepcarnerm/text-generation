@@ -36,7 +36,7 @@ class Model(nn.Module):
         return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
-        batch_size = input.size(0)
+        batch_size = input.size(0) # Will be self.opt.batch_size at train time, 1 at test time
         encoded = self.encoder(input)
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
         output = self.decoder(output.view(batch_size, -1))
@@ -47,7 +47,6 @@ class Model(nn.Module):
         output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
         output = self.decoder(output.view(1, -1))
         return output, hidden
-
     def get_input_and_target(self, batch):
 
         inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
@@ -110,4 +109,3 @@ class Model(nn.Module):
                 inp = inp.cuda()
 
         return predicted
-

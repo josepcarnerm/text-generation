@@ -9,11 +9,13 @@ import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
 from nltk.corpus import wordnet as wn
+from models.word_rnn import Model as WordRNNModel
 
-class Model(nn.Module):
+
+class Model(WordRNNModel):
 
     def __init__(self, opt):
-        super(Model, self).__init__()
+        super(WordRNNModel, self).__init__()
 
         self.opt = opt
         self.word_dict = torch.load(self.opt.input_file_train + '.word_dict')
@@ -24,6 +26,8 @@ class Model(nn.Module):
         self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
         self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
+        self.encoder_topic = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
+        for p in self.encoder_topic.parameters(): p.requires_grad = False  # Freeze weights
 
         self.criterion = nn.CrossEntropyLoss()
 
@@ -31,25 +35,6 @@ class Model(nn.Module):
 
         self.losses_reconstruction = []
         self.losses_topic = []
-
-    def from_string_to_tensor(self, sentence):
-        tensor = torch.zeros(len(sentence)).long()
-        for word_i in range(len(sentence)):
-            try:
-                tensor[word_i] = self.word_dict[sentence[word_i]]
-            except:
-                continue
-        return tensor
-
-    def from_predicted_index_to_string(self, index):
-        return self.inverted_word_dict[index]
-
-    def forward(self, input, hidden):
-        batch_size = input.size(0)  # Will be self.opt.batch_size at train time, 1 at test time
-        encoded = self.encoder(input)
-        output, hidden = self.rnn(encoded.contiguous().view(1, batch_size, -1), hidden.contiguous())
-        output = self.decoder(output.view(batch_size, -1))
-        return output, hidden
 
     def closeness_to_topics(self, words_weights, topics):
 
@@ -92,33 +77,20 @@ class Model(nn.Module):
 
         return Variable(topics).cuda() if is_remote() else Variable(topics)
 
-    def encode_sentences_to_var(self, batch):
-
-        # Convert sentences (list of words - strings) in batch to tensors, each word is now represented as an integer
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
-        for i, sentence in enumerate(batch):
-            inp[:, i] = self.from_string_to_tensor(sentence)
-            target[:, i] = self.from_string_to_tensor(sentence)
-        inp = inp[:, :-1]
-        target = target[:, 1:]
-        inp = Variable(inp)
-        target = Variable(target)
-        if is_remote():
-            inp = inp.cuda()
-            target = target.cuda()
-        return inp, target
+    def copy_weights_encoder(self):
+        # Copy weights in encoder to to encoder_topic so that both embedding layers are the same but the latter
+        # is not influenced by the topic loss
+        self.encoder_topic.load_state_dict(self.encoder.state_dict())
 
     def evaluate(self, batch):
-
-        topics = self.select_topics(batch)
-        inp, target = self.encode_sentences_to_var(batch)
 
         loss_reconstruction = 0
         loss_topic = 0
 
+        self.copy_weights_encoder()
+        topics = self.select_topics(batch)
+        inp, target = self.get_input_and_target(batch)
         # Topic is provided as an initialization to the hidden state
-
         hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1)\
                       .permute(1, 0, 2)  # N_layers x batch_size x N_hidden
 
@@ -140,7 +112,6 @@ class Model(nn.Module):
             loss_topic_total_weight += loss_topic_weights
             loss_topic += self.closeness_to_topics(output, topics) * loss_topic_weights
 
-
         loss_topic = torch.mean(loss_topic/loss_topic_total_weight)
 
         self.losses_reconstruction.append(loss_reconstruction.data[0])
@@ -148,10 +119,7 @@ class Model(nn.Module):
 
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
-    def init_hidden(self, batch_size):
-        return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
-
-    def select_word_index_from_one_hot_encoding(self, one_hot, temperature=0.8):
+    def RNN_output_to_word(self, one_hot, temperature=0.8):
         word_dist = one_hot.div(temperature).exp()
         _, top_indexes = word_dist.max(1)
         # top_indexes = torch.multinomial(word_dist, 1)
@@ -159,11 +127,10 @@ class Model(nn.Module):
 
     def test(self, prime_words, predict_len, temperature=0.8):
 
+        self.copy_weights_encoder()
         topic = self.select_topics([['happy']])
-
         hidden = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
                       .permute(1, 0, 2)  # N_layers x 1 x N_hidden
-
         prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 
         if is_remote():
@@ -195,3 +162,7 @@ class Model(nn.Module):
     # Debug
     def get_avg_losses(self):
         return numpy.mean(self.losses_reconstruction), numpy.mean(self.losses_topic)
+
+    def parameters(self):
+        params = (p for p in super(Model, self).parameters() if p.requires_grad)
+        return params
