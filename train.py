@@ -71,6 +71,7 @@ test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batc
 def train_epoch(nsteps):
     total_loss = 0
     model.train()
+
     for iter, batch in enumerate(train_dataloader):
         optimizer.zero_grad()
         model.zero_grad()
@@ -84,7 +85,10 @@ def train_epoch(nsteps):
         optimizer.step()
 
         if iter == nsteps:
+            if 'analyze' in dir(model):
+                model.analyze(batch)
             break
+
     return total_loss / nsteps
 
 
@@ -128,7 +132,7 @@ def train(n_epochs):
         # Print log string
         log_string = ('iter: {:d}, train_loss: {:0.6f}, valid_loss: {:0.6f}, best_valid_loss: {:0.6f}, lr: {:0.5f}').format(
                       (i+1)*opt.epoch_size, train_loss[-1], valid_loss[-1], best_valid_loss, opt.lrt)
-        if opt.model == 'word_rnn_topic':
+        if opt.model == 'word_rnn_topic_loss':
             str_debug = 'Average reconstruction loss: {}, average topic closeness loss: {}'.format(
                 model.get_avg_losses()[0], model.get_avg_losses()[1]
             )

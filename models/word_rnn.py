@@ -47,6 +47,7 @@ class Model(nn.Module):
         output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
         output = self.decoder(output.view(1, -1))
         return output, hidden
+
     def get_input_and_target(self, batch):
 
         inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
