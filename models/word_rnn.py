@@ -36,7 +36,7 @@ class Model(nn.Module):
         return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
-        batch_size = input.size(0)
+        batch_size = input.size(0) # Will be self.opt.batch_size at train time, 1 at test time
         encoded = self.encoder(input)
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
         output = self.decoder(output.view(batch_size, -1))
@@ -48,13 +48,13 @@ class Model(nn.Module):
         output = self.decoder(output.view(1, -1))
         return output, hidden
 
-    def evaluate(self, batch):
+    def get_input_and_target(self, batch):
 
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len+1)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len+1)
+        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
+        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
         for i, sentence in enumerate(batch):
-            inp[:,i] = self.from_string_to_tensor(sentence)
-            target[:,i] = self.from_string_to_tensor(sentence)
+            inp[:, i] = self.from_string_to_tensor(sentence)
+            target[:, i] = self.from_string_to_tensor(sentence)
         inp = inp[:, :-1]
         target = target[:, 1:]
         inp = Variable(inp)
@@ -63,6 +63,11 @@ class Model(nn.Module):
             inp = inp.cuda()
             target = target.cuda()
 
+        return inp, target
+
+    def evaluate(self, batch):
+
+        inp, target = self.get_input_and_target(batch)
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
 
@@ -105,4 +110,3 @@ class Model(nn.Module):
                 inp = inp.cuda()
 
         return predicted
-
