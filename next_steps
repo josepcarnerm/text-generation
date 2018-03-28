@@ -16,8 +16,6 @@ Things to try:
  - Think / define new ways of: selecting a "topic" and computing the loss againt the topic.
 
 Proposed way to proceed (Josep):
- - Work on a couple/three more models for text generation (attention, pretrained embeddings, convolutional), analyze which works best,
-   and then move to playing with topic stuff using these different models.
  - More communication through messenger: updates on what everyone is working need to be more constant, meet in person if required
  - General philosophy: more agile, more communication, more sort-term objectives that can be constantly redefined and communicated
  - More coordination: everytime someone is "free", let's all discuss and agree on what he can "pick" from the list.
