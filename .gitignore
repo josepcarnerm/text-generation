@@ -10,4 +10,4 @@ workspace.iml
 txtgen/
 text-generation.iml
  .idea/workspace.xml
-
+data/
