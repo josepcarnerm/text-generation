@@ -1,6 +1,7 @@
 import string
 
 import torch, pdb
+import numpy as np
 import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros, build_glove
@@ -11,14 +12,19 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.opt = opt
-        self.word_dict = torch.load(self.opt.input_file_train + '.word_dict')
-        # pdb.set_trace()
-        self.inverted_word_dict = {i:w for w,i in self.word_dict.items()}
+        self.word_dict = torch.load(self.opt.input_file_train + '.g_word_dict')
+        self.inverted_word_dict = {}
+        self.word_dict_dim = self.word_dict['the'][1].size(0)
+
+        for key in self.word_dict.keys():
+            self.inverted_word_dict[self.word_dict[key][0]] = key
+
         self.N_WORDS = len(self.word_dict)
 
         self.glv = build_glove(self.opt.glove_dir)
 
-        self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
+        self.encoder = nn.Embedding(self.N_WORDS, self.word_dict_dim)
+        self.encoder.weight = nn.Parameter(self.vocab_embedding())
         self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
@@ -26,42 +32,56 @@ class Model(nn.Module):
 
         self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
-    def from_string_to_tensor(self, sentence):
-        tensor = torch.zeros(len(sentence)).long()
-        for i, word in enumerate(sentence):
-            # pdb.set_trace()
-            try:
-                tensor[i] = self.glv[0][self.word_dict.get(word)]
+    def vocab_embedding(self):
+        embeddings = torch.FloatTensor((len(self.word_dict)), self.word_dict_dim)
+        for k, v in self.word_dict.items():
+            embeddings[v[0]] = v[1]
+        return embeddings
 
+    def from_string_to_tensor(self, sentence):
+        tensor = torch.LongTensor(len(sentence))
+        for i, word in enumerate(sentence):
+            try:
+                tensor[i] = self.word_dict[word][0]
             except:
                 continue
-        pdb.set_trace()
+        return tensor
+
+    def from_index_to_embedding(self, input):
+        tensor = torch.FloatTensor(len(input), self.word_dict_dim)
+        for i, index in enumerate(input):
+            tensor[i] = self.glv[0][index.data[0]]
         return tensor
 
     def from_predicted_index_to_string(self, index):
         return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
-        pdb.set_trace()
         batch_size = input.size(0)
         encoded = self.encoder(input)
+        encoded = Variable(encoded)
+        if is_remote():
+            encoded = encoded.cuda()
+
+        pdb.set_trace()
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
     def forward2(self, input, hidden):
+
         encoded = self.encoder(input.view(1, -1))
         output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
         output = self.decoder(output.view(1, -1))
         return output, hidden
 
-    def evaluate(self, batch):
+    def get_input_and_target(self, batch):
 
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len+1)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len+1)
+        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
+        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
         for i, sentence in enumerate(batch):
-            inp[:,i] = self.from_string_to_tensor(sentence)
-            target[:,i] = self.from_string_to_tensor(sentence)
+            inp[:, i] = self.from_string_to_tensor(sentence)
+            target[:, i] = self.from_string_to_tensor(sentence)
         inp = inp[:, :-1]
         target = target[:, 1:]
         inp = Variable(inp)
@@ -70,6 +90,11 @@ class Model(nn.Module):
             inp = inp.cuda()
             target = target.cuda()
 
+        return inp, target
+
+    def evaluate(self, batch):
+
+        inp, target = self.get_input_and_target(batch)
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
 
