@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
 
+
 class Model(nn.Module):
 
     def __init__(self, opt):

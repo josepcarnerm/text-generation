@@ -79,9 +79,13 @@ class Model(WordRNNModel):
         loss = 0
         for w in range(self.opt.sentence_len):
             output, hidden = self.forward(inp[:, w], hidden)
-            loss += self.criterion(output, target[:, w])
+            loss += self.criterion(output, target[:, w])  # From documentation: The losses are averaged across observations for each minibatch.
 
         return loss
+
+    def perplexity(self, batch):
+        loss = eval(batch)
+        return torch.exp(loss.data[0])
 
     def RNN_output_to_word(self, one_hot, temperature=0.8):
         word_dist = one_hot.div(temperature).exp()
