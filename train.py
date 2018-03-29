@@ -36,6 +36,7 @@ parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weigh
 parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
 parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
 parser.add_argument('-sentence_len', type=int, default=20)
+parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
 
 opt = parser.parse_args()
 # --------------------------------------------------------------------------------------------------------------
