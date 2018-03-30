@@ -55,7 +55,7 @@ class MyDataset(Dataset):
         start_index_topic = random.randint(0, self.topic_len - self.opt.sentence_len)
         end_index_topic = start_index_topic + self.opt.sentence_len+1
         topic_sentence = self.topic_words[start_index_topic:end_index_topic]
-        print("Sentence being fed in: " + topic_sentence)
+        print("Sentence being fed in: " + " ".join(topic_sentence))
         return topic_sentence # + sentence
 
     def __len__(self):
