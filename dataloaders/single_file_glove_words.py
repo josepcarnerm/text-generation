@@ -2,7 +2,7 @@ import torch, random, os, re, pdb
 from torch.utils.data import Dataset
 from collections import Counter
 
-from utils import ALL_CHARS, is_remote, build_glove, glove2dict, word_to_idx, word_to_tensor
+from utils import ALL_CHARS, is_remote,glove2dict
 
 
 class MyDataset(Dataset):
