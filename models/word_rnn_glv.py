@@ -27,8 +27,11 @@ class Model(nn.Module):
         # Clear the memory
         del self.word_dict
 
-        # self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
-        self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
+        if self.opt.rnn_type.lower() == 'gru':
+            self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
+        elif self.opt.rnn_type.lower() == 'lstm':
+            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=0.5)
+
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -99,7 +102,13 @@ class Model(nn.Module):
         return loss
 
     def init_hidden(self, batch_size):
-        return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
+        weight = next(self.parameters()).data
+
+        if self.opt.rnn_type.lower() is 'gru':
+            return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
+        elif self.opt.rnn_type.lower() is 'lstm':
+            return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)),
+                    zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)))
 
     def test(self, prime_words, predict_len, temperature=0.8):
 

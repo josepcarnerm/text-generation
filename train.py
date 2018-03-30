@@ -27,8 +27,10 @@ parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, hel
 ############################
 parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
+parser.add_argument('-rnn_type', type=str, default='gru', help= 'Type of RNN: GRU or LSTM')
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
+
 
 #################################
 # Dataloader dependent settings #
