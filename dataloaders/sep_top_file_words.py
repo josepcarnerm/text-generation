@@ -21,7 +21,7 @@ class MyDataset(Dataset):
             self.words = self.words.replace(c, ' '+c+' ')
         self.words = [word.lower() for word in self.words.split(' ') if word.strip() != '']
 
-        self.topic_words = str(self.file)
+        self.topic_words = str(self.topic_file)
         for c in self.NON_DIGITS:
             self.topic_words = self.topic_words.replace(c, ' '+c+' ')
         self.topic_words = [word.lower() for word in self.topic_words.split(' ') if word.strip() != '']
