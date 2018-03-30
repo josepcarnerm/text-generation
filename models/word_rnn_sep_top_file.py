@@ -70,8 +70,8 @@ class Model(nn.Module):
 
     def get_input_and_target(self, batch):
 
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
+        inp = torch.LongTensor(self.opt.batch_size, (2 * self.opt.sentence_len) + 1)
+        target = torch.LongTensor(self.opt.batch_size, (2 * self.opt.sentence_len) + 1)
         for i, sentence in enumerate(batch):
             inp[:, i] = self.from_string_to_tensor(sentence)
             target[:, i] = self.from_string_to_tensor(sentence)
@@ -91,7 +91,7 @@ class Model(nn.Module):
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
 
-        for w in range(self.opt.sentence_len):
+        for w in range((2 * self.opt.sentence_len)):
             output, hidden = self.forward(inp[:, w], hidden)
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
