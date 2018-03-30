@@ -89,7 +89,7 @@ class Model(WordRNNModel):
 
         self.copy_weights_encoder()
         topics = self.select_topics(batch)
-        topics, inp, target = self.get_input_and_target(batch)
+        inp, target = self.get_input_and_target(batch)
         # Topic is provided as an initialization to the hidden state
         hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1)\
                       .permute(1, 0, 2)  # N_layers x batch_size x N_hidden
