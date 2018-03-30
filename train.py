@@ -138,7 +138,7 @@ def train(n_epochs):
         utils.log(opt.save_dir + 'logs.txt', log_string, utils.time_since(start))
 
         # Print example
-        warmup = 'Wh' if opt.model == 'char_rnn' else ['What']
+        warmup = 'Wh' if opt.model == 'char_rnn' else ['Love']
         test_sample = model.test(warmup, opt.sentence_len)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
         print(test_sample + '\n')
