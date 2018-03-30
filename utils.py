@@ -136,34 +136,3 @@ def glove2dict(src_filename):
     reader = csv.reader(open(src_filename), delimiter=' ', quoting=csv.QUOTE_NONE)
     return {line[0]: torch.FloatTensor(list(map(float, line[1: ]))) for line in reader}
 
-
-def word_to_idx(word, glove_dict):
-    """Maps a word to an idx in the GloVe dictionary.
-    Parameters
-    ----------
-    word : str
-        The word in question
-    glove_dict : dict
-        Dictionary containing str : FloatTensor for GloVe embedding vector
-    Returns
-    -------
-    idx: int
-        The integer index of the word in the glove vector
-    """
-    return glove_dict.get(word)[0]
-
-
-def word_to_tensor(word, glove_dict):
-    """Maps a word to a float tensor from the GloVe dictionary.
-    Parameters
-    ----------
-    word : str
-        The word in question
-    glove_dict : dict
-        Dictionary containing str : FloatTensor for GloVe embedding vector
-    Returns
-    -------
-    tensor : torch.FloatTensor
-        The integer index of the word in the glove vector
-    """
-    return glove_dict.get(word)[1]
