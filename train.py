@@ -37,6 +37,7 @@ parser.add_argument('-input_file_train', type=str, default='data/shakespeare_tra
 parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
 parser.add_argument('-sentence_len', type=int, default=20)
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
+parser.add_argument('-topic_file', type=str, default='data/happiness_wiki.txt', help='path to topic file for test data')
 
 opt = parser.parse_args()
 # --------------------------------------------------------------------------------------------------------------
