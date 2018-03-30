@@ -1,6 +1,6 @@
 # External modules imports
 from __future__ import division
-import argparse, pdb, os, numpy, time, torch, sys
+import argparse, pdb, os, numpy, time, torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -161,7 +161,8 @@ if __name__ == '__main__':
         print('Initializing model...')
         mod = __import__('models.{}'.format(opt.model), fromlist=['Model'])
         model = getattr(mod, 'Model')(opt)
-        optimizer = optim.Adam(model.parameters(), opt.lrt)
+        parameters = filter(lambda p: p.requires_grad, model.parameters())
+        optimizer = optim.Adam(parameters, opt.lrt)
 
     model = model.cuda() if utils.is_remote() else model
 

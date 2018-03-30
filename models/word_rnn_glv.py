@@ -4,7 +4,7 @@ import torch, pdb
 import numpy as np
 import torch.nn as nn
 from torch.autograd import Variable
-from utils import is_remote, zeros, build_glove
+from utils import is_remote, zeros
 
 class Model(nn.Module):
 
@@ -12,19 +12,21 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.opt = opt
+
+        # Load word dict from file
         self.word_dict = torch.load(self.opt.input_file_train + '.g_word_dict')
-        self.inverted_word_dict = {}
-        self.word_dict_dim = self.word_dict['the'][1].size(0)
+        self.word_dict_dim = self.word_dict['the'].size(0)
+        self.word2idx = self.get_word_to_idx()
+        self.inverted_word_dict = {idx: word for word, idx in self.word2idx.items()}
 
-        for key in self.word_dict.keys():
-            self.inverted_word_dict[self.word_dict[key][0]] = key
-
-        self.N_WORDS = len(self.word_dict)
-
-        self.glv = build_glove(self.opt.glove_dir)
+        self.N_WORDS = len(self.word2idx)
 
         self.encoder = nn.Embedding(self.N_WORDS, self.word_dict_dim)
         self.encoder.weight = nn.Parameter(self.vocab_embedding())
+        self.encoder.weight.requires_grad = False
+        # Clear the memory
+        del self.word_dict
+
         self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
@@ -32,25 +34,22 @@ class Model(nn.Module):
 
         self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
+    def get_word_to_idx(self):
+        return {word: idx for idx, word in enumerate((self.word_dict.keys()))}
+
     def vocab_embedding(self):
-        embeddings = torch.FloatTensor((len(self.word_dict)), self.word_dict_dim)
-        for k, v in self.word_dict.items():
-            embeddings[v[0]] = v[1]
+        embeddings = torch.zeros((len(self.word2idx)), self.word_dict_dim).float()
+        for k, v in self.word2idx.items():
+            embeddings[v] = self.word_dict[k]
         return embeddings
 
     def from_string_to_tensor(self, sentence):
         tensor = torch.LongTensor(len(sentence))
         for i, word in enumerate(sentence):
             try:
-                tensor[i] = self.word_dict[word][0]
+                tensor[i] = self.word2idx[word]
             except:
-                continue
-        return tensor
-
-    def from_index_to_embedding(self, input):
-        tensor = torch.FloatTensor(len(input), self.word_dict_dim)
-        for i, index in enumerate(input):
-            tensor[i] = self.glv[0][index.data[0]]
+                tensor[i] = self.word2idx['unk']
         return tensor
 
     def from_predicted_index_to_string(self, index):
@@ -59,17 +58,11 @@ class Model(nn.Module):
     def forward(self, input, hidden):
         batch_size = input.size(0)
         encoded = self.encoder(input)
-        encoded = Variable(encoded)
-        if is_remote():
-            encoded = encoded.cuda()
-
-        pdb.set_trace()
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
     def forward2(self, input, hidden):
-
         encoded = self.encoder(input.view(1, -1))
         output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
         output = self.decoder(output.view(1, -1))
