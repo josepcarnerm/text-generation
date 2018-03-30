@@ -56,7 +56,7 @@ class MyDataset(Dataset):
         end_index_topic = start_index_topic + self.opt.sentence_len+1
         topic_sentence = self.topic_words[start_index_topic:end_index_topic]
 
-        return topic_sentence + sentence
+        return topic_sentence # + sentence
 
     def __len__(self):
         return self.len-self.opt.sentence_len
