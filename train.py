@@ -99,7 +99,13 @@ def test_epoch(nsteps):
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0] / opt.sentence_len
+        try:
+            total_loss += loss_batch.data[0] / opt.sentence_len
+        except RuntimeError as e:
+            print("Got runtime error: {}\n".format(e))
+            print("total_loss = {}\nloss_batch.data[0] = {}\n, opt.sentence_len = {}\n"\
+                  .format(total_loss, loss_batch.data[0], opt.sentence_len))
+
 
         if iter == nsteps:
             break
