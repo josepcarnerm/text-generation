@@ -29,6 +29,7 @@ parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden 
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-rnn_type', type=str, default='gru', help= 'Type of RNN: GRU or LSTM')
 parser.add_argument('-ngrams', type=int, default=2, help='Size of word-grams to consider')
+parser.add_argument('-docsize', type=int, default=25, help='Number of sentences per \'document\' for topic modelling.\n')
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
 
@@ -160,22 +161,30 @@ if __name__ == '__main__':
     torch.manual_seed(opt.seed)
     start = time.time()
 
-    if os.path.isfile(opt.save_dir + 'checkpoint'):
-        print('loading existing model...')
-        utils.log(opt.save_dir + 'logs.txt', '[loading existing model]')
-        checkpoint = torch.load(opt.save_dir + 'checkpoint')
-        model = checkpoint.get('model')
-        optimizer = checkpoint.get('optimizer')
+    if opt.model != 'topic_model':
+        if os.path.isfile(opt.save_dir + 'checkpoint'):
+            print('loading existing model...')
+            utils.log(opt.save_dir + 'logs.txt', '[loading existing model]')
+            checkpoint = torch.load(opt.save_dir + 'checkpoint')
+            model = checkpoint.get('model')
+            optimizer = checkpoint.get('optimizer')
+        else:
+            print('Initializing model...')
+            mod = __import__('models.{}'.format(opt.model), fromlist=['Model'])
+            model = getattr(mod, 'Model')(opt)
+            parameters = filter(lambda p: p.requires_grad, model.parameters())
+            optimizer = optim.Adam(parameters, opt.lrt)
+        model = model.cuda() if utils.is_remote() else model
+        print('training...')
+        utils.log(opt.save_dir + 'logs.txt', '[training]')
+        train(opt.n_epochs)
+
     else:
-        print('Initializing model...')
-        mod = __import__('models.{}'.format(opt.model), fromlist=['Model'])
         model = getattr(mod, 'Model')(opt)
-        parameters = filter(lambda p: p.requires_grad, model.parameters())
-        optimizer = optim.Adam(parameters, opt.lrt)
 
-    model = model.cuda() if utils.is_remote() else model
+        # train_dataloader
+        # test_dataloader
 
-    print('training...')
-    utils.log(opt.save_dir + 'logs.txt', '[training]')
-    train(opt.n_epochs)
+
+
 
