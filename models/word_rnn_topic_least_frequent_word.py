@@ -16,23 +16,6 @@ class Model(WordRNNModel):
 
     def __init__(self, opt):
         super(Model, self).__init__(opt)
-        self.opt = opt
-        self.word_dict = torch.load(self.opt.input_file_train + '.word_dict')
-        self.inverted_word_dict = {i: w for w, i in self.word_dict.items()}
-        self.word_count = torch.load(self.opt.input_file_train + '.word_count')
-        self.N_WORDS = len(self.word_dict)
-
-        self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
-        self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
-        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
-        self.encoder_topic = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
-
-        self.criterion = nn.CrossEntropyLoss()
-
-        self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
-
-        self.losses_reconstruction = []
-        self.losses_topic = []
 
     def analyze(self, batch):
 
@@ -82,16 +65,6 @@ class Model(WordRNNModel):
             loss += self.criterion(output, target[:, w])  # From documentation: The losses are averaged across observations for each minibatch.
 
         return loss
-
-    def perplexity(self, batch):
-        loss = eval(batch)
-        return torch.exp(loss.data[0])
-
-    def RNN_output_to_word(self, one_hot, temperature=0.8):
-        word_dist = one_hot.div(temperature).exp()
-        _, top_indexes = word_dist.max(1)
-        # top_indexes = torch.multinomial(word_dist, 1)
-        return top_indexes
 
     def test(self, prime_words, predict_len, temperature=0.8):
 

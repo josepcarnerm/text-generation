@@ -21,6 +21,7 @@ parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
+parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
 
 ############################
 # Model dependent settings #
@@ -33,11 +34,12 @@ parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weigh
 #################################
 # Dataloader dependent settings #
 #################################
-parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
-parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
+# Single file
+parser.add_argument('-input_file', type=str, default='shakespeare_train.txt', help='path to input file')
 parser.add_argument('-sentence_len', type=int, default=20)
 
 opt = parser.parse_args()
+opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -86,7 +88,7 @@ def train_epoch(nsteps):
 
         if iter == nsteps:
             if 'analyze' in dir(model):
-                model.analyze(batch)
+                model.analyze(batch[:5])
             break
 
     return total_loss / nsteps

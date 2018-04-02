@@ -12,7 +12,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.opt = opt
-        self.word_dict = torch.load(self.opt.input_file_train + '.word_dict')
+        self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.word_dict')
         self.inverted_word_dict = {i:w for w,i in self.word_dict.items()}
         self.N_WORDS = len(self.word_dict)
 
@@ -37,7 +37,7 @@ class Model(nn.Module):
         return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
-        batch_size = input.size(0) # Will be self.opt.batch_size at train time, 1 at test time
+        batch_size = input.size(0)  # Will be self.opt.batch_size at train time, 1 at test time
         encoded = self.encoder(input)
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden.contiguous())
         output = self.decoder(output.view(batch_size, -1))
@@ -77,6 +77,10 @@ class Model(nn.Module):
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
         return loss
+
+    def perplexity(self, batch):
+        loss = eval(batch)
+        return torch.exp(loss.data[0])
 
     def init_hidden(self, batch_size):
         return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
