@@ -3,13 +3,14 @@ import nltk, pdb, re
 from collections import Counter
 from utils import glove2dict
 from sklearn import decomposition
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from scipy import linalg
+from time import time
 
 
 class OneFileDataloader(object):
     def __init__(self):
         input_file_train = './data/shakespeare_train.txt'
-        input_file_test = './data/shakespeare_test.txt'
         glove_file = './data/glove.6B/glove.6B.50d.txt'
         with open(input_file_train, 'r', encoding = 'utf-8', errors='ignore') as f:
             self.file = f.read()
@@ -30,7 +31,10 @@ class OneFileDataloader(object):
 
         self.documents = self.split_tokens_into_documents(tokens)
         self.len = len(self.documents)
-        self.doc_term_matrix = self.generate_doc_term_matrix()
+        #self.doc_term_matrix = self.generate_doc_term_matrix()
+
+    def get_documents_as_list(self):
+        return [' '.join(doc) for doc in self.documents]
 
     def get_matrix(self):
         return self.doc_term_matrix
@@ -59,7 +63,7 @@ class OneFileDataloader(object):
         \n :return: list of lists [ [docsize] for docsize in single-file corpus].
         '''
         documents, sentence, i = [], [], 1
-        punct = ['.', '!', '?']
+        punct = ['.', '!', '?', ';']
         for tok in tokens:
             sentence.append(tok)
             if tok in punct:
@@ -88,8 +92,42 @@ class OneFileDataloader(object):
                 matrix[word_to_index[word]] = count
         return rownames, matrix
 
+dev_samples = 3000
+n_features = 500
+n_components = 10
+n_top_words = 20
+
+def print_top_words(model, feature_names, n_top_words):
+    for topic_idx, topic in enumerate(model.components_):
+        message = "Topic #%d: " % topic_idx
+        message += " ".join([feature_names[i]
+                             for i in topic.argsort()[:-n_top_words - 1:-1]])
+        print(message)
+
 if __name__ == '__main__':
+    t0 = time()
     dataloader = OneFileDataloader()
-    rownames, matrix = dataloader.get_matrix()
-    pdb.set_trace()
+    docs = dataloader.get_documents_as_list()
+    print("Read in 'file' as {} documents in {}".format(len(docs), time()-t0))
+
+    dev_docs = docs[:dev_samples]
+
+    print("Extracting tf-idf features for NMF on {} docs.".format(len(dev_docs)))
+    tfidf_vectorizer = TfidfVectorizer(max_df=4, min_df=2, max_features=100, stop_words='english')
+
+    t0 = time()
+    tfidf = tfidf_vectorizer.fit_transform(dev_docs)
+    print("Done in {}".format(time() - t0))
+
+    print("Fitting NMF model with tf-idf features")
+    t0 = time()
+    nmf = decomposition.NMF(n_components=n_components, random_state=1,\
+                            alpha=.1, l1_ratio=.5).fit(tfidf)
+    print("Done in {}".format(time() - t0))
+
+    print("\nTopics in NMF model (Frobenius norm):")
+    tfidf_feature_names = tfidf_vectorizer.get_feature_names()
+    print_top_words(nmf, tfidf_feature_names, n_top_words)
+    # rownames, matrix = dataloader.get_matrix()
+    # pdb.set_trace()
     num_topics, num_top_words = 6, 8
