@@ -45,7 +45,6 @@ class MyDataset(Dataset):
                 new_words.append(word.lower()[:-2]+'ed')
             else:
                 new_words.append(word.lower())
-
         return [word if self.glv_dict.get(word) is not None else 'unk' for word in new_words]
 
     def create_word_dict(self):

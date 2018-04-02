@@ -1,25 +1,21 @@
-import torch, re
-import nltk
 import numpy as np
-from torch.utils.data import Dataset
+import nltk, pdb, re
 from collections import Counter
-import random
 from utils import glove2dict
+from sklearn import decomposition
+from scipy import linalg
 
-class MyTopicDataset(Dataset):
 
-    def __init__(self, opt, train):
-        self.opt = opt
-
-        if train:
-            with open(self.opt.input_file_train, 'r', encoding='utf-8', errors='ignore') as f:
-                self.file = f.read()
-        else:
-            with open(self.opt.input_file_test, 'r', encoding='utf-8', errors='ignore') as f:
-                self.file = f.read()
+class OneFileDataloader(object):
+    def __init__(self):
+        input_file_train = './data/shakespeare_train.txt'
+        input_file_test = './data/shakespeare_test.txt'
+        glove_file = './data/glove.6B/glove.6B.50d.txt'
+        with open(input_file_train, 'r', encoding = 'utf-8', errors='ignore') as f:
+            self.file = f.read()
 
         self.file = re.sub(' {2,}', ' ', self.file)
-        self.file = re.sub('\n{1,}', '\n', self.file)
+        self.file = re.sub('\n{1,', '\n', self.file)
 
         try:
             tokens = nltk.word_tokenize(self.file)
@@ -27,34 +23,17 @@ class MyTopicDataset(Dataset):
             nltk.download('punkt')
             tokens = nltk.word_tokenize(self.file)
 
-        # Load glove vectors to process unknown words (this is wasteful but it helps)
-        self.glv_dict = glove2dict(self.opt.glove_dir)
+        self.glv_dict = glove2dict(glove_file)
         tokens = self.process_unknown_words(tokens)
         self.vocab = set(tokens)
-        # Clear the memory
-        del self.glv_dict
+        self.docsize = 25
 
         self.documents = self.split_tokens_into_documents(tokens)
         self.len = len(self.documents)
+        self.doc_term_matrix = self.generate_doc_term_matrix()
 
-    def generate_doc_term_matrix(self):
-        '''
-        This function converts self.documents to numpy word-doc matrix
-        :return: the word-document matrix
-        '''
-        i, words = enumerate(self.vocab)
-        word_to_index = {w: j for w, j in zip( words, i )}
-        rownames = np.array([[w] for w in words])
-
-        n_docs = len(self.documents)
-        colnames = np.array(['D'+ n for n in range(n_docs)])
-        matrix = np.zeros([len(rownames), len(colnames)])
-        for doc in self.documents:
-            word_count = Counter(doc)
-            for word, count in word_count.items():
-                matrix[word_to_index[word]] = count
-        return matrix
-
+    def get_matrix(self):
+        return self.doc_term_matrix
 
     def process_unknown_words(self, words):
         '''
@@ -82,20 +61,35 @@ class MyTopicDataset(Dataset):
         documents, sentence, i = [], [], 1
         punct = ['.', '!', '?']
         for tok in tokens:
-            sentence.append([tok])
+            sentence.append(tok)
             if tok in punct:
                 i += 1
-            if i % self.opt.docsize == 0:
+            if i % self.docsize == 0:
                 documents.append(sentence)
                 sentence.clear()
         return documents
 
+    def generate_doc_term_matrix(self):
+        '''
+        This function converts self.documents to numpy word-doc matrix
+        :return: the word-document matrix
+        '''
+        # for i, word in enumerate(self.vocab):
+        vocab = list(self.vocab)
+        word_to_index = {w: i for i, w in enumerate(vocab)}
+        rownames = np.array([[w] for w in vocab])
 
+        n_docs = len(self.documents)
+        colnames = np.array(['D'+ str(n) for n in range(n_docs)])
+        matrix = np.zeros([len(rownames), len(colnames)])
+        for doc in self.documents:
+            word_count = Counter(doc)
+            for word, count in word_count.items():
+                matrix[word_to_index[word]] = count
+        return rownames, matrix
 
-
-    def __getitem__(self, index):
-        return self.doc_word_matrix
-
-    def __len__(self):
-        return 1
-
+if __name__ == '__main__':
+    dataloader = OneFileDataloader()
+    rownames, matrix = dataloader.get_matrix()
+    pdb.set_trace()
+    num_topics, num_top_words = 6, 8

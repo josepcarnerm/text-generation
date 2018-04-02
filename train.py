@@ -15,7 +15,9 @@ import utils
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
 parser.add_argument('-dataloader', type=str, default='single_file_str_words')  # Must be a valid file name in dataloaders/ folder
+parser.add_argument('-topic_dataloader', type=str, default='single_file_multidoc', help='Which dataloader to use for topic model')
 parser.add_argument('-model', type=str, default='word_rnn_topic')  # Must be a valid file name in models/ folder
+parser.add_argument('-topic_model', type=str, default='nmf_topic_decomposition')
 parser.add_argument('-batch_size', type=int, default=100)
 parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
@@ -67,8 +69,15 @@ print('Initializing dataloader...')
 mod = __import__('dataloaders.{}'.format(opt.dataloader), fromlist=['MyDataset'])
 datasetClass = getattr(mod, 'MyDataset')
 
+print('Initializing topic dataloader...')
+topic_mod = __import__('dataloaders.{}'.format(opt.topic_dataloader), fromlist=['MyTopicDataset'])
+topic_datasetClass = getattr(topic_mod, 'MyTopicDataset')
+
 train_dataloader = DataLoader(datasetClass(opt, train=True), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
 test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+
+train_topic_dataloader = DataLoader(topic_datasetClass(opt, train=True), batch_size=opt.batch_size, shuffle=False, drop_last=False, pin_memory=utils.is_remote())
+
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -106,8 +115,6 @@ def test_epoch(nsteps):
             print("Got runtime error: {}\n".format(e))
             print("total_loss = {}\nloss_batch.data[0] = {}\n, opt.sentence_len = {}\n"\
                   .format(total_loss, loss_batch.data[0], opt.sentence_len))
-
-
         if iter == nsteps:
             break
 
@@ -153,15 +160,25 @@ def train(n_epochs):
         utils.log(opt.save_dir + 'examples.txt', test_sample)
         print(test_sample + '\n')
 
-# --------------------------------------------------------------------------------------------------------------
+def train_topic_model(n_epochs):
+    pdb.set_trace()
+    topic_model.train()
 
+
+# --------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
 
     numpy.random.seed(opt.seed)
     torch.manual_seed(opt.seed)
     start = time.time()
 
-    if opt.model != 'topic_model':
+    if opt.topic_model == 'nmf_topic_decomposition':
+        topic_mod = __import__('models.{}'.format(opt.topic_model), fromlist=['TopicModel'])
+        topic_model = getattr(topic_mod, 'TopicModel')(opt)
+        train_topic_model(opt.n_epochs)
+
+
+    else:
         if os.path.isfile(opt.save_dir + 'checkpoint'):
             print('loading existing model...')
             utils.log(opt.save_dir + 'logs.txt', '[loading existing model]')
@@ -179,12 +196,5 @@ if __name__ == '__main__':
         utils.log(opt.save_dir + 'logs.txt', '[training]')
         train(opt.n_epochs)
 
-    else:
-        model = getattr(mod, 'Model')(opt)
-
         # train_dataloader
         # test_dataloader
-
-
-
-

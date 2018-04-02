@@ -1,6 +1,6 @@
 import os, csv, torch, time, socket, string, math
 import numpy as np
-from textblob import TextBlob as tb
+# from textblob import TextBlob as tb
 
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
