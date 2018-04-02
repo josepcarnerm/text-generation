@@ -1,10 +1,10 @@
-import pdb
+import string
 
-import torch
+import torch, pdb
+import numpy as np
 import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
-
 
 class Model(nn.Module):
 
@@ -12,11 +12,21 @@ class Model(nn.Module):
         super(Model, self).__init__()
 
         self.opt = opt
-        self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.word_dict')
-        self.inverted_word_dict = {i:w for w,i in self.word_dict.items()}
-        self.N_WORDS = len(self.word_dict)
 
-        self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
+        # Load word dict from file
+        self.word_dict = torch.load(self.opt.input_file_train + '.g_word_dict')
+        self.word_dict_dim = self.word_dict['the'].size(0)
+        self.word2idx = self.get_word_to_idx()
+        self.inverted_word_dict = {idx: word for word, idx in self.word2idx.items()}
+
+        self.N_WORDS = len(self.word2idx)
+
+        self.encoder = nn.Embedding(self.N_WORDS, self.word_dict_dim)
+        self.encoder.weight = nn.Parameter(self.vocab_embedding())
+        self.encoder.weight.requires_grad = False
+        # Clear the memory
+        del self.word_dict
+
         self.rnn = nn.GRU(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
@@ -24,22 +34,31 @@ class Model(nn.Module):
 
         self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
+    def get_word_to_idx(self):
+        return {word: idx for idx, word in enumerate((self.word_dict.keys()))}
+
+    def vocab_embedding(self):
+        embeddings = torch.zeros((len(self.word2idx)), self.word_dict_dim).float()
+        for k, v in self.word2idx.items():
+            embeddings[v] = self.word_dict[k]
+        return embeddings
+
     def from_string_to_tensor(self, sentence):
-        tensor = torch.zeros(len(sentence)).long()
-        for word_i in range(len(sentence)):
+        tensor = torch.LongTensor(len(sentence))
+        for i, word in enumerate(sentence):
             try:
-                tensor[word_i] = self.word_dict[sentence[word_i]]
+                tensor[i] = self.word2idx[word]
             except:
-                continue
+                tensor[i] = self.word2idx['unk']
         return tensor
 
     def from_predicted_index_to_string(self, index):
         return self.inverted_word_dict[index]
 
     def forward(self, input, hidden):
-        batch_size = input.size(0)  # Will be self.opt.batch_size at train time, 1 at test time
+        batch_size = input.size(0)
         encoded = self.encoder(input)
-        output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden.contiguous())
+        output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
@@ -78,10 +97,6 @@ class Model(nn.Module):
 
         return loss
 
-    def perplexity(self, batch):
-        loss = eval(batch)
-        return torch.exp(loss.data[0])
-
     def init_hidden(self, batch_size):
         return zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn))
 
@@ -115,3 +130,4 @@ class Model(nn.Module):
                 inp = inp.cuda()
 
         return predicted
+

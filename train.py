@@ -1,6 +1,6 @@
 # External modules imports
 from __future__ import division
-import argparse, pdb, os, numpy, time, torch, sys
+import argparse, pdb, os, numpy, time, torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -37,6 +37,7 @@ parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weigh
 # Single file
 parser.add_argument('-input_file', type=str, default='shakespeare_train.txt', help='path to input file')
 parser.add_argument('-sentence_len', type=int, default=20)
+parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
 
 opt = parser.parse_args()
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
@@ -166,7 +167,8 @@ if __name__ == '__main__':
         print('Initializing model...')
         mod = __import__('models.{}'.format(opt.model), fromlist=['Model'])
         model = getattr(mod, 'Model')(opt)
-        optimizer = optim.Adam(model.parameters(), opt.lrt)
+        parameters = filter(lambda p: p.requires_grad, model.parameters())
+        optimizer = optim.Adam(parameters, opt.lrt)
 
     model = model.cuda() if utils.is_remote() else model
 

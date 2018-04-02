@@ -21,3 +21,12 @@ Proposed way to proceed (Josep):
  - More coordination: everytime someone is "free", let's all discuss and agree on what he can "pick" from the list.
  - Everything we want to try, we put it in the list above, remove when it's done.
  - More use of office hours and check if we are in the right direction (once per week)? (Maybe asking in class instead of office hours)
+
+(Matt):
+ - Train a separate LDA model (i.e. code one up in PyTorch) that identifies the top, say, 5 topics from our text corpus, and use
+   distance between word embedding for those topics and the generated output as part of the reconstruction loss (summation)
+ - As a means of evaluation, use the pretrained LDA model on a series of generated sentences
+ - Use word bigrams or trigrams as embedding for better text generation cohesion
+ - Additionally add POS tagging via pretrained POS tag as part of the embedding (nltk comes to mind) by defining pos tags as follows:
+   - in GloVe space, compute average of all words of a given POS tag as a pretrained embedding, and sum it with each word of a given POS tag
+   - As a uniform random n (100, 200, etc) dimensional vector per POS tag that we either concatenate with the word embedding or add to it
