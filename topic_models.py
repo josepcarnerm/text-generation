@@ -3,7 +3,7 @@ import nltk, pdb, re
 from collections import Counter
 from utils import glove2dict
 from sklearn import decomposition
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 from scipy import linalg
 from time import time
 
@@ -27,7 +27,7 @@ class OneFileDataloader(object):
         self.glv_dict = glove2dict(glove_file)
         tokens = self.process_unknown_words(tokens)
         self.vocab = set(tokens)
-        self.docsize = 25
+        self.docsize = 150
 
         self.documents = self.split_tokens_into_documents(tokens)
         self.len = len(self.documents)
@@ -92,10 +92,10 @@ class OneFileDataloader(object):
                 matrix[word_to_index[word]] = count
         return rownames, matrix
 
-dev_samples = 3000
+dev_samples = 2000
 n_features = 500
-n_components = 10
-n_top_words = 20
+n_topics = 20
+n_top_words = 5
 
 def print_top_words(model, feature_names, n_top_words):
     for topic_idx, topic in enumerate(model.components_):
@@ -112,22 +112,23 @@ if __name__ == '__main__':
 
     dev_docs = docs[:dev_samples]
 
-    print("Extracting tf-idf features for NMF on {} docs.".format(len(dev_docs)))
-    tfidf_vectorizer = TfidfVectorizer(max_df=4, min_df=2, max_features=100, stop_words='english')
+    print("Extracting vectorized features for LDA on {} docs.".format(len(dev_docs)))
+    vectorizer = CountVectorizer(max_df=1.0, min_df=0.75, max_features=n_features, stop_words='english')
 
     t0 = time()
-    tfidf = tfidf_vectorizer.fit_transform(dev_docs)
+    cv = vectorizer.fit_transform(dev_docs)
     print("Done in {}".format(time() - t0))
 
-    print("Fitting NMF model with tf-idf features")
+    print("Fitting LDA model with vectorized features")
+    lda_model = decomposition.LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_offset=50.)
     t0 = time()
-    nmf = decomposition.NMF(n_components=n_components, random_state=1,\
-                            alpha=.1, l1_ratio=.5).fit(tfidf)
+    lda_model.fit(cv)
+
     print("Done in {}".format(time() - t0))
 
-    print("\nTopics in NMF model (Frobenius norm):")
-    tfidf_feature_names = tfidf_vectorizer.get_feature_names()
-    print_top_words(nmf, tfidf_feature_names, n_top_words)
+    print("\nTopics in LDA model:")
+    feature_names = vectorizer.get_feature_names()
+    print_top_words(lda_model, feature_names, n_top_words)
     # rownames, matrix = dataloader.get_matrix()
     # pdb.set_trace()
     num_topics, num_top_words = 6, 8
