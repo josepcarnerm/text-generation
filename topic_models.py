@@ -6,6 +6,7 @@ from sklearn import decomposition
 from sklearn.feature_extraction.text import CountVectorizer
 from scipy import linalg
 from time import time
+from gensim.summarization import summarize
 
 
 class OneFileDataloader(object):
@@ -27,7 +28,7 @@ class OneFileDataloader(object):
         self.glv_dict = glove2dict(glove_file)
         tokens = self.process_unknown_words(tokens)
         self.vocab = set(tokens)
-        self.docsize = 150
+        self.docsize = 10
 
         self.documents = self.split_tokens_into_documents(tokens)
         self.len = len(self.documents)
@@ -62,14 +63,15 @@ class OneFileDataloader(object):
         \n :param tokens: a list of tokens tokenized by nltk
         \n :return: list of lists [ [docsize] for docsize in single-file corpus].
         '''
-        documents, sentence, i = [], [], 1
+        documents, sentence, i = [], [], 0
         punct = ['.', '!', '?', ';']
-        for tok in tokens:
+        for j, tok in enumerate(tokens):
             sentence.append(tok)
             if tok in punct:
                 i += 1
-            if i % self.docsize == 0:
-                documents.append(sentence)
+            if i == self.docsize:
+                i = 0
+                documents.append(sentence[:])
                 sentence.clear()
         return documents
 
@@ -93,7 +95,7 @@ class OneFileDataloader(object):
         return rownames, matrix
 
 dev_samples = 2000
-n_features = 500
+n_features = 100
 n_topics = 20
 n_top_words = 5
 
@@ -112,23 +114,24 @@ if __name__ == '__main__':
 
     dev_docs = docs[:dev_samples]
 
-    print("Extracting vectorized features for LDA on {} docs.".format(len(dev_docs)))
-    vectorizer = CountVectorizer(max_df=1.0, min_df=0.75, max_features=n_features, stop_words='english')
+    # print("Extracting vectorized features for LDA on {} docs.".format(len(dev_docs)))
+    # vectorizer = CountVectorizer(max_df=1.0, min_df=0.75, max_features=n_features, stop_words='english')
+    #
+    # t0 = time()
+    # cv = vectorizer.fit_transform(dev_docs)
+    # print("Done in {}".format(time() - t0))
+    #
+    # print("Fitting LDA model with vectorized features")
+    # lda_model = decomposition.LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_offset=50.)
+    # t0 = time()
+    # lda_model.fit(cv)
+    #
+    # print("Done in {}".format(time() - t0))
+    #
+    # print("\nTopics in LDA model:")
+    # feature_names = vectorizer.get_feature_names()
+    # print_top_words(lda_model, feature_names, n_top_words)
 
-    t0 = time()
-    cv = vectorizer.fit_transform(dev_docs)
-    print("Done in {}".format(time() - t0))
-
-    print("Fitting LDA model with vectorized features")
-    lda_model = decomposition.LatentDirichletAllocation(n_components=n_topics, max_iter=5, learning_offset=50.)
-    t0 = time()
-    lda_model.fit(cv)
-
-    print("Done in {}".format(time() - t0))
-
-    print("\nTopics in LDA model:")
-    feature_names = vectorizer.get_feature_names()
-    print_top_words(lda_model, feature_names, n_top_words)
+    print("Now summarizing doc 5:")
+    print(summarize(docs[7], ratio=.1))
     # rownames, matrix = dataloader.get_matrix()
-    # pdb.set_trace()
-    num_topics, num_top_words = 6, 8
