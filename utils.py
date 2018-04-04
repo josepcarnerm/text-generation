@@ -16,7 +16,7 @@ def get_savedir(opt):
     # Whenever you add a new model/dataloader, you need to modify this to make sure parameters relying on other
     # models/dataloaders don't appear in the save dir
 
-    ATTR_DONT_INCLUDE_IN_SAVEDIR = ['input_file_train', 'input_file_test', 'seed', 'gpu']
+    ATTR_DONT_INCLUDE_IN_SAVEDIR = ['input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir']
 
     if opt.model != 'word_rnn_topic':
         ATTR_DONT_INCLUDE_IN_SAVEDIR.append('loss_alpha')

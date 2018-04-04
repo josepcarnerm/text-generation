@@ -21,24 +21,30 @@ parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
+parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
+parser.add_argument('-dropout', type=float, default=0.0)
 
 ############################
 # Model dependent settings #
 ############################
 parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
+parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
+parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
+
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
 
 #################################
 # Dataloader dependent settings #
 #################################
-parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
-parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
+# Single file
+parser.add_argument('-input_file', type=str, default='shakespeare_train.txt', help='path to input file')
 parser.add_argument('-sentence_len', type=int, default=20)
-parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
 
 opt = parser.parse_args()
+opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -72,6 +78,7 @@ test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batc
 def train_epoch(nsteps):
     total_loss = 0
     model.train()
+
     for iter, batch in enumerate(train_dataloader):
         optimizer.zero_grad()
         model.zero_grad()
@@ -85,7 +92,10 @@ def train_epoch(nsteps):
         optimizer.step()
 
         if iter == nsteps:
+            if 'analyze' in dir(model):
+                model.analyze(batch[:5])
             break
+
     return total_loss / nsteps
 
 
@@ -129,7 +139,7 @@ def train(n_epochs):
         # Print log string
         log_string = ('iter: {:d}, train_loss: {:0.6f}, valid_loss: {:0.6f}, best_valid_loss: {:0.6f}, lr: {:0.5f}').format(
                       (i+1)*opt.epoch_size, train_loss[-1], valid_loss[-1], best_valid_loss, opt.lrt)
-        if opt.model == 'word_rnn_topic':
+        if opt.model == 'word_rnn_topic_loss':
             str_debug = 'Average reconstruction loss: {}, average topic closeness loss: {}'.format(
                 model.get_avg_losses()[0], model.get_avg_losses()[1]
             )
@@ -138,7 +148,7 @@ def train(n_epochs):
         utils.log(opt.save_dir + 'logs.txt', log_string, utils.time_since(start))
 
         # Print example
-        warmup = 'Wh' if opt.model == 'char_rnn' else ['What']
+        warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
         test_sample = model.test(warmup, opt.sentence_len)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
         print(test_sample + '\n')

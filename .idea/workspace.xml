@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+<<<<<<< HEAD
+    <list default="true" id="f1a328fc-5ae6-48bb-b28c-8d28d7ac3793" name="Default" comment="" />
+=======
     <list default="true" id="f1a328fc-5ae6-48bb-b28c-8d28d7ac3793" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
     </list>
+>>>>>>> 6778caff60fc3c2eae7f338b09deef1cafe4f9ff
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,6 +48,19 @@
           </provider>
         </entry>
       </file>
+<<<<<<< HEAD
+      <file leaf-file-name="run_jobs.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/run_jobs.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="20" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+=======
+>>>>>>> 6778caff60fc3c2eae7f338b09deef1cafe4f9ff
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -311,7 +328,10 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-1481" y="-1057" width="1920" height="1057" extended-state="6" />
+<<<<<<< HEAD
+=======
     <editor active="true" />
+>>>>>>> 6778caff60fc3c2eae7f338b09deef1cafe4f9ff
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14643237" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -579,6 +599,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="480">
           <caret line="38" column="0" lean-forward="false" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+<<<<<<< HEAD
+          <folding>
+            <element signature="e#0#13#0" expanded="false" />
+          </folding>
+=======
+>>>>>>> 6778caff60fc3c2eae7f338b09deef1cafe4f9ff
         </state>
       </provider>
     </entry>
@@ -607,8 +633,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/next_steps">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+        <state relative-caret-position="270">
+          <caret line="20" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+=======
         <state relative-caret-position="255">
           <caret line="17" column="32" lean-forward="false" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
+>>>>>>> 6778caff60fc3c2eae7f338b09deef1cafe4f9ff
           <folding />
         </state>
       </provider>
