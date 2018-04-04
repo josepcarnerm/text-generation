@@ -15,7 +15,6 @@ class MyDataset(Dataset):
         self.prob_repeat_example = 0.25
         self.n_items = int(1/self.prob_repeat_example)
         self.word_dict()
-        import pdb; pdb.set_trace()
 
     def word_dict(self):
         word_dict_file = self.opt.save_dir+ 'dictionary.word_dict'
@@ -23,7 +22,6 @@ class MyDataset(Dataset):
             n_words = self.opt.batch_size*self.opt.n_epochs*self.opt.epoch_size*self.n_items
             self.words = [word for word in self.rw.random_words(count=n_words) if self.dictionary.meaning(word)] + ['happy']
             word_dict = {w: i for i, w in enumerate(set(self.words))}
-            import pdb; pdb.set_trace()
             torch.save(word_dict, word_dict_file)
         else:
             word_dict = torch.load(word_dict_file)

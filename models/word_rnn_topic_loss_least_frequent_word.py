@@ -39,7 +39,7 @@ class Model(WordRNNModel):
             word = words[i]
             synonyms = [topic.data[0]]
             for syn in wn.synsets(topic_str):
-                synonyms += [self.word_dict[l.name()] for l in syn.lemmas() if l.name() in self.word_dict]
+                synonyms += [self.word2idx[l.name()] for l in syn.lemmas() if l.name() in self.word2idx]
 
             synonyms = torch.from_numpy(numpy.array(synonyms))
             synonyms = Variable(synonyms).cuda() if is_remote() else Variable(synonyms)

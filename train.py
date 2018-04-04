@@ -22,12 +22,17 @@ parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
+parser.add_argument('-dropout', type=float, default=0.0)
 
 ############################
 # Model dependent settings #
 ############################
 parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
+parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
+parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
+
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
 
@@ -37,7 +42,6 @@ parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weigh
 # Single file
 parser.add_argument('-input_file', type=str, default='shakespeare_train.txt', help='path to input file')
 parser.add_argument('-sentence_len', type=int, default=20)
-parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
 
 opt = parser.parse_args()
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
@@ -144,7 +148,7 @@ def train(n_epochs):
         utils.log(opt.save_dir + 'logs.txt', log_string, utils.time_since(start))
 
         # Print example
-        warmup = 'Wh' if opt.model == 'char_rnn' else ['What']
+        warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
         test_sample = model.test(warmup, opt.sentence_len)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
         print(test_sample + '\n')

@@ -4,8 +4,9 @@ from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 jobs = [
 
-    {'dataloader': 'dictionary', 'model': 'word_rnn', 'batch_size': 3, 'lrt': 0.01,
-     'epoch_size': 1, 'n_epochs': 1, 'hidden_size_rnn': 7, 'n_layers_rnn': 2, 'sentence_len': 10},
+    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn', 'batch_size': 3, 'lrt': 0.01,
+     'epoch_size': 1, 'n_epochs': 1, 'hidden_size_rnn': 7, 'n_layers_rnn': 2, 'sentence_len': 10, 'reuse_pred': '',
+     'use_pretrained_embeddings': '', },
 
     # {'dataloader': 'single_file_str_words', 'model': 'word_rnn', 'batch_size': 500, 'lrt': 0.01, 'epoch_size': 100,
     #  'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20},
@@ -29,7 +30,7 @@ def run_job(job):
 
     name = ''
     for k, v in sorted(job.items()):
-        name += ('' if name == '' else '-') + '{}={}'.format(k,v)
+        name += ('' if name == '' else '-') + ('{}={}'.format(k,v) if v!="" else k)
 
     command_srun = (
         'srun --job-name "{}" --output "{}/{}.out" --err "{}/{}.err" --mail-type=ALL --mail-user=jcm807@nyu.edu '
@@ -38,7 +39,7 @@ def run_job(job):
 
     command_py = 'python train.py '
     for k,v in sorted(job.items()):
-        command_py += '-{} "{}" '.format(k,v)
+        command_py += '-{} "{}" '.format(k,v) if v!="" else '-{} '.format(k)
 
     command = command_py if utils.is_local() else command_srun + ' ' + command_py + '&'
     print('Running command: '+command)
