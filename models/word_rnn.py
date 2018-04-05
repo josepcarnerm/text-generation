@@ -25,7 +25,8 @@ class Model(nn.Module):
                 embeddings[v] = self.word_dict[k]
             self.encoder.weight = nn.Parameter(embeddings)
             self.encoder.weight.requires_grad = False
-            del self.word_dict  # Clear the memory
+            if self.opt.model == 'word_rnn':
+                del self.word_dict  # Clear the memory
 
         self.criterion = nn.CrossEntropyLoss()
 
@@ -79,9 +80,10 @@ class Model(nn.Module):
         if len(batch) == 2:  # Topic included. Batch is: topics, sentences
             batch = batch[1]
 
-        inp = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
-        target = torch.LongTensor(self.opt.batch_size, self.opt.sentence_len + 1)
-        for i in range(self.opt.sentence_len + 1):
+        batch_size, sentence_len = len(batch[0]), len(batch)-1
+        inp = torch.LongTensor(batch_size, sentence_len + 1)
+        target = torch.LongTensor(batch_size, sentence_len + 1)
+        for i in range(sentence_len + 1):
             sentence = batch[i]
             inp[:, i] = self.from_string_to_tensor(sentence)
             target[:, i] = self.from_string_to_tensor(sentence)

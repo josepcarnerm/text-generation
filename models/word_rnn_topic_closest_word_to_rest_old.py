@@ -9,10 +9,10 @@ import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
 from nltk.corpus import wordnet as wn
-from models.word_rnn_topic_provided import Model as WordRNNTopic
+from models.word_rnn_topic_least_frequent_word import Model as WordRNNTopicLeastFrequentWordModel
 
 
-class Model(WordRNNTopic):
+class Model(WordRNNTopicLeastFrequentWordModel):
 
     def __init__(self, opt):
         super(Model, self).__init__(opt)
@@ -57,6 +57,3 @@ class Model(WordRNNTopic):
             topics_words.append(closest_word_to_centroid)
 
         return Variable(topics).cuda() if is_remote() else Variable(topics), topics_words
-
-    def get_test_topic(self):
-        return self.select_topics([['happy']])
