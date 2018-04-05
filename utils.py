@@ -135,6 +135,6 @@ def glove2dict(src_filename):
     dict
         Mapping words to their GloVe vectors.
     """
-    reader = csv.reader(open(src_filename), delimiter=' ', quoting=csv.QUOTE_NONE)
+    reader = csv.reader(open(src_filename), delimiter=' ', quoting=csv.QUOTE_NONE, encoding="utf-8")
     return {line[0]: torch.FloatTensor(list(map(float, line[1: ]))) for line in reader}
 
