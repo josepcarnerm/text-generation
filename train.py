@@ -1,6 +1,6 @@
 # External modules imports
 from __future__ import division
-import argparse, pdb, os, numpy, time, torch, sys
+import argparse, pdb, os, numpy, time, torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -21,23 +21,30 @@ parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
+parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
+parser.add_argument('-dropout', type=float, default=0.0)
 
 ############################
 # Model dependent settings #
 ############################
 parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
+parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
+parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
+
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
 
 #################################
 # Dataloader dependent settings #
 #################################
-parser.add_argument('-input_file_train', type=str, default='data/shakespeare_train.txt', help='path to input file for training data')
-parser.add_argument('-input_file_test', type=str, default='data/shakespeare_test.txt', help='path to input file for test data')
+# Single file
+parser.add_argument('-input_file', type=str, default='shakespeare_train.txt', help='path to input file')
 parser.add_argument('-sentence_len', type=int, default=20)
 
 opt = parser.parse_args()
+opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -86,7 +93,7 @@ def train_epoch(nsteps):
 
         if iter == nsteps:
             if 'analyze' in dir(model):
-                model.analyze(batch)
+                model.analyze([sentence[:5] for sentence in batch])
             break
 
     return total_loss / nsteps
@@ -141,7 +148,7 @@ def train(n_epochs):
         utils.log(opt.save_dir + 'logs.txt', log_string, utils.time_since(start))
 
         # Print example
-        warmup = 'Wh' if opt.model == 'char_rnn' else ['What']
+        warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
         test_sample = model.test(warmup, opt.sentence_len)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
         print(test_sample + '\n')
@@ -164,7 +171,8 @@ if __name__ == '__main__':
         print('Initializing model...')
         mod = __import__('models.{}'.format(opt.model), fromlist=['Model'])
         model = getattr(mod, 'Model')(opt)
-        optimizer = optim.Adam(model.parameters(), opt.lrt)
+        parameters = filter(lambda p: p.requires_grad, model.parameters())
+        optimizer = optim.Adam(parameters, opt.lrt)
 
     model = model.cuda() if utils.is_remote() else model
 
