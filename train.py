@@ -93,7 +93,7 @@ def train_epoch(nsteps):
 
         if iter == nsteps:
             if 'analyze' in dir(model):
-                model.analyze(batch[:5])
+                model.analyze([sentence[:5] for sentence in batch])
             break
 
     return total_loss / nsteps

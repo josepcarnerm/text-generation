@@ -4,22 +4,20 @@ from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 jobs = [
 
-    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn', 'batch_size': 3, 'lrt': 0.01,
-     'epoch_size': 1, 'n_epochs': 1, 'hidden_size_rnn': 7, 'n_layers_rnn': 2, 'sentence_len': 10, 'reuse_pred': '',
-     'use_pretrained_embeddings': '', },
+    # {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn_topic_closest_word_to_rest', 'batch_size': 3, 'lrt': 0.01,
+    #  'epoch_size': 1, 'n_epochs': 100, 'hidden_size_rnn': 7, 'n_layers_rnn': 2, 'sentence_len': 10, 'reuse_pred': '', 'use_pretrained_embeddings': ''
+    #  },
 
-    # {'dataloader': 'single_file_str_words', 'model': 'word_rnn', 'batch_size': 500, 'lrt': 0.01, 'epoch_size': 100,
-    #  'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20},
-    # {'dataloader': 'single_file_str_words', 'model': 'word_rnn', 'batch_size': 500, 'lrt': 0.01, 'epoch_size': 100,
-    #  'n_epochs': 400, 'hidden_size_rnn': 500, 'n_layers_rnn': 3, 'sentence_len': 20},
-    # {'dataloader': 'single_file_str_words', 'model': 'word_rnn', 'batch_size': 500, 'lrt': 0.01, 'epoch_size': 200,
-    #  'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20},
-    # {'dataloader': 'single_file_str_words', 'model': 'word_rnn_topic', 'batch_size': 100, 'lrt': 0.01, 'epoch_size': 100,
-    #  'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20, 'loss_alpha': 0.15},
-    # {'dataloader': 'single_file_str_words', 'model': 'word_rnn_topic_loss', 'batch_size': 100, 'lrt': 0.01,
-    #  'epoch_size': 100,
-    #  'n_epochs': 400, 'hidden_size_rnn': 300, 'n_layers_rnn': 3, 'sentence_len': 20, 'loss_alpha': 0.15},
 
+    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn_topic_closest_word_to_rest', 'batch_size': 100, 'lrt': 0.01,
+     'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
+     },
+    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn', 'batch_size': 100, 'lrt': 0.01,
+     'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
+     },
+    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn_topic_least_frequent_word', 'batch_size': 100, 'lrt': 0.01,
+     'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
+     }
 ]
 
 srun_args = ['']

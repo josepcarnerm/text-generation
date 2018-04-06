@@ -16,7 +16,9 @@ def get_savedir(opt):
     # Whenever you add a new model/dataloader, you need to modify this to make sure parameters relying on other
     # models/dataloaders don't appear in the save dir
 
-    ATTR_DONT_INCLUDE_IN_SAVEDIR = ['input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir']
+    ATTR_DONT_INCLUDE_IN_SAVEDIR = [
+        'input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir', 'data_dir', 'input_file'
+    ]
 
     if opt.model != 'word_rnn_topic':
         ATTR_DONT_INCLUDE_IN_SAVEDIR.append('loss_alpha')
@@ -133,6 +135,6 @@ def glove2dict(src_filename):
     dict
         Mapping words to their GloVe vectors.
     """
-    reader = csv.reader(open(src_filename), delimiter=' ', quoting=csv.QUOTE_NONE)
+    reader = csv.reader(open(src_filename), delimiter=' ', quoting=csv.QUOTE_NONE, encoding="utf-8")
     return {line[0]: torch.FloatTensor(list(map(float, line[1: ]))) for line in reader}
 

@@ -71,7 +71,7 @@ class MyDataset(Dataset):
 
     def get_words(self):
         self.words = []
-        for sentence in self.sentences:
+        for sentence in self.sentences_all['train'] + self.sentences_all['test']:
             self.words += list(sentence)
 
     def create_word_dict(self):
@@ -90,7 +90,7 @@ class MyDataset(Dataset):
         torch.save(word_dict, word_dict_file)
 
     def create_word_count_glove(self):
-        word_count_file = self.opt.data_dir + self.opt.input_file + 'sentences.g_word_count'
+        word_count_file = self.opt.data_dir + self.opt.input_file + '.sentences.g_word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
 

@@ -9,28 +9,35 @@ import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
 from nltk.corpus import wordnet as wn
-from models.word_rnn import Model as WordRNNModel
+from models.word_rnn_topic_provided import Model as WordRNNModelTopic
 
 
-class Model(WordRNNModel):
+class Model(WordRNNModelTopic):
 
     def __init__(self, opt):
         super(Model, self).__init__(opt)
 
-    def analyze(self, batch):
+    def analyze_topics(self, batch):
+        batch_size, sentence_len = len(batch[0]), len(batch) - 1
 
+        # Analyze select_topics
         examples = []
         # Is noun, adjective, verb or adverb?
         is_nava = lambda word: len(wn.synsets(word)) != 0
 
         # Select "topic" as the least common noun, verb, adjective or adverb in each sentence
+        print('Analyzing topic candidates......')
         for i in range(len(batch[0])):
             sentence = [batch[j][i] for j in range(len(batch))]
             words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word)])
             least_common_word = words_sorted[0][1] if len(words_sorted) > 0 else sentence[0]
             examples.append({'sentence': sentence, 'topic candidates': words_sorted})
 
-        print(examples)
+        for e in examples:
+            print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+
+    def get_test_topic(self):
+        return self.select_topics([['happy']])
 
     def select_topics(self, batch):
 
@@ -42,59 +49,12 @@ class Model(WordRNNModel):
 
         # Select "topic" as the least common noun, verb, adjective or adverb in each sentence
         topics = torch.LongTensor(batch_size, 1)
+        topics_words = []
         for i in range(batch_size):
             sentence = [batch[j][i] for j in range(len(batch))]
-            words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word)])
+            words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word) and word in self.word2idx])
             least_common_word = words_sorted[0][1] if len(words_sorted) > 0 else sentence[0]
             topics[i] = self.from_string_to_tensor([least_common_word])
+            topics_words.append(least_common_word)
 
-        return Variable(topics).cuda() if is_remote() else Variable(topics)
-
-    def evaluate(self, batch):
-
-        topics = self.select_topics(batch)
-        inp, target = self.get_input_and_target(batch)
-        # Topic is provided as an initialization to the hidden state
-        hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1)\
-                      .permute(1, 0, 2)  # N_layers x batch_size x N_hidden
-
-        # Encode/Decode sentence
-        loss = 0
-        for w in range(self.opt.sentence_len):
-            output, hidden = self.forward(inp[:, w], hidden)
-            loss += self.criterion(output, target[:, w])  # From documentation: The losses are averaged across observations for each minibatch.
-
-        return loss
-
-    def test(self, prime_words, predict_len, temperature=0.8):
-
-        topic = self.select_topics([['happy']])
-        hidden = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
-                      .permute(1, 0, 2)  # N_layers x 1 x N_hidden
-        prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
-
-        if is_remote():
-            prime_input = prime_input.cuda()
-        predicted = ' '.join(prime_words)
-
-        # Use priming string to "build up" hidden state
-        for p in range(len(prime_words) - 1):
-            _, hidden = self.forward(prime_input[:, p], hidden)
-
-        inp = prime_input[:, -1]
-
-        for p in range(predict_len):
-            output, hidden = self.forward(inp, hidden)
-
-            # Sample from the network as a multinomial distribution
-            output_dist = output.data.view(-1).div(temperature).exp()
-            top_i = torch.multinomial(output_dist, 1)[0]
-
-            # Add predicted character to string and use as next input
-            predicted_word = self.from_predicted_index_to_string(top_i)
-            predicted += ' '+predicted_word
-            inp = Variable(self.from_string_to_tensor([predicted_word]).unsqueeze(0))
-            if is_remote():
-                inp = inp.cuda()
-
-        return predicted
+        return Variable(topics).cuda() if is_remote() else Variable(topics), topics_words
