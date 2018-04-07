@@ -1,4 +1,4 @@
-import string
+import string, pdb
 
 import nltk
 nltk.download('wordnet')
@@ -146,7 +146,7 @@ class Model(WordRNNModel):
 
         # Topic is provided as an initialization to the hidden state
         topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
-                         .permute(1, 0, 2)  # N_layers x batch_size x N_hidden
+                         .contiguous().permute(1, 0, 2)  # N_layers x batch_size x N_hidden
         hidden = topic_enc, topic_enc.clone()
 
         # Encode/Decode sentence
@@ -177,14 +177,14 @@ class Model(WordRNNModel):
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
     def get_test_topic(self):
-        return self.select_topics((['happy'], [['happy']]))
+        return self.select_topics((['love'], [['love']]))
 
     def test(self, prime_words, predict_len, temperature=0.8):
 
         self.copy_weights_encoder()
         topic, _ = self.get_test_topic()
         topic_enc = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
-                         .permute(1, 0, 2)  # N_layers x 1 x N_hidden
+                         .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
         hidden = topic_enc, topic_enc.clone()
         prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 

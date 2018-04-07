@@ -16,13 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
 parser.add_argument('-dataloader', type=str, default='single_file_str_sentences')  # Must be a valid file name in dataloaders/ folder
 parser.add_argument('-model', type=str, default='word_rnn')  # Must be a valid file name in models/ folder
-parser.add_argument('-batch_size', type=int, default=100)
+parser.add_argument('-batch_size', type=int, default=128)
 parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
-parser.add_argument('-dropout', type=float, default=0.0)
+parser.add_argument('-dropout', type=float, default=0.50)
 
 ############################
 # Model dependent settings #

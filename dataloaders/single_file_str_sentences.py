@@ -1,6 +1,5 @@
 import numpy
 import torch, unidecode, random, os
-from torch.autograd import Variable
 from torch.utils.data import Dataset
 from collections import Counter
 
@@ -55,11 +54,19 @@ class MyDataset(Dataset):
                     sentence for sentence in self.sentences if all(self.glv_dict.get(word) is not None for word in sentence)
                 ]
 
-            # self.sentences = [sentence for sentence in self.sentences if len(sentence)>self.opt.sentence_len]
+            self.sentences = [sentence for sentence in self.sentences if len(sentence) > self.opt.sentence_len]
 
-            numpy.random.shuffle(self.sentences)
-            n_train = int(len(self.sentences)*0.75)
-            self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
+            self.sentences_all = {'train': [], 'test': []}
+            for sentence in self.sentences:
+                if numpy.random.uniform() > 0.75:
+                    self.sentences_all['test'].append(sentence)
+                else:
+                    self.sentences_all['train'].append(sentence)
+
+
+            # numpy.random.shuffle(self.sentences)
+            # n_train = int(len(self.sentences)*0.75)
+            # self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
             torch.save(self.sentences_all, sentences_file)
         else:
             self.sentences_all = torch.load(sentences_file)
