@@ -79,8 +79,9 @@ class Model(WordRNNModel):
             batch = batch[1]
         inp, target = self.get_input_and_target(batch)
         # Topic is provided as an initialization to the hidden state
-        hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0,
-                                                                                                    2)  # N_layers x batch_size x N_hidden
+        hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2), \
+                 torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2)  # N_layers x batch_size x N_hidden
+
         for i in range(len(batch[0])):
             sentence = [batch[j][i] for j in range(len(batch))]
             examples.append(
