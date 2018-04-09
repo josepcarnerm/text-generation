@@ -14,8 +14,10 @@ import utils
 #####################
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
-parser.add_argument('-dataloader', type=str, default='single_file_str_sentences')  # Must be a valid file name in dataloaders/ folder
-parser.add_argument('-model', type=str, default='word_rnn')  # Must be a valid file name in models/ folder
+# parser.add_argument('-dataloader', type=str, default='single_file_str_sentences')  # Must be a valid file name in dataloaders/ folder
+parser.add_argument('-dataloader', type=str, default='multi_file_str_sep_topic')  # Must be a valid file name in dataloaders/ folder
+# parser.add_argument('-model', type=str, default='word_rnn_topic_least_frequent_word')  # Must be a valid file name in models/ folder
+parser.add_argument('-model', type=str, default='word_rnn_sep_top_entangled')  # Must be a valid file name in models/ folder
 parser.add_argument('-batch_size', type=int, default=100)
 parser.add_argument('-lrt', type=float, default=0.01)
 parser.add_argument('-epoch_size', type=int, default=100)
@@ -30,18 +32,23 @@ parser.add_argument('-dropout', type=float, default=0.0)
 parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
-parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-use_pretrained_embeddings', default=True, action='store_true', help='if true, use pretrained glove embeddings')
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
+parser.add_argument('-topic_folder_path', type=str, default='data/wikiData/', help='directory to sep topic folder')
+
+parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
-
 #################################
 # Dataloader dependent settings #
 #################################
 # Single file
 parser.add_argument('-input_file', type=str, default='shakespeare_train.txt', help='path to input file')
-parser.add_argument('-sentence_len', type=int, default=20)
+parser.add_argument('-sentence_len', type=int, default=10)
+
+# Multi file
+parser.add_argument('-input_folder_path', type=str, default='data/dickens', help='path to input file')
 
 opt = parser.parse_args()
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
@@ -53,10 +60,10 @@ torch.manual_seed(opt.seed)
 torch.set_default_tensor_type('torch.FloatTensor')
 
 if opt.gpu != 0:
-    opt.device = opt.gpu-1
+    opt.device = opt.gpu
     print('Setting cuda device to {}. ({} Device available)'.format(opt.device, torch.cuda.device_count()))
     print('Options are: {}'.format(opt))
-    torch.cuda.set_device(opt.gpu-1)
+    torch.cuda.set_device(opt.gpu)
 
 # Set filename based on parameters
 opt.save_dir = utils.get_savedir(opt)
@@ -82,7 +89,7 @@ def train_epoch(nsteps):
     for iter, batch in enumerate(train_dataloader):
         optimizer.zero_grad()
         model.zero_grad()
-
+        # import pdb; pdb.set_trace()
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len

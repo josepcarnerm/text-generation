@@ -46,7 +46,7 @@ class Model(WordRNNModelTopic):
         # Is noun, adjective, verb or adverb?
         is_nava = lambda word: len(wn.synsets(word)) != 0
         batch_size = len(batch[0])
-
+        import pdb; pdb.set_trace();
         # Select "topic" as the least common noun, verb, adjective or adverb in each sentence
         topics = torch.LongTensor(batch_size, 1)
         topics_words = []
@@ -56,5 +56,4 @@ class Model(WordRNNModelTopic):
             least_common_word = words_sorted[0][1] if len(words_sorted) > 0 else sentence[0]
             topics[i] = self.from_string_to_tensor([least_common_word])
             topics_words.append(least_common_word)
-
         return Variable(topics).cuda() if is_remote() else Variable(topics), topics_words

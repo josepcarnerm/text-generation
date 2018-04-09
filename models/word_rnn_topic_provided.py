@@ -143,6 +143,7 @@ class Model(WordRNNModel):
 
         self.copy_weights_encoder()
         topics, topics_words = self.select_topics(batch)
+        import pdb; pdb.set_trace()
         inp, target = self.get_input_and_target(batch)
 
         # Topic is provided as an initialization to the hidden state

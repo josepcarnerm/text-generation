@@ -1,7 +1,7 @@
 import os, csv, torch, time, socket, string, math
 import numpy as np
 from textblob import TextBlob as tb
-
+import collections
 from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 N_CHARS = len(string.printable)
@@ -138,3 +138,11 @@ def glove2dict(src_filename):
     reader = csv.reader(open(src_filename, encoding='utf-8', errors='ignore'), delimiter=' ', quoting=csv.QUOTE_NONE)
     return {line[0]: torch.FloatTensor(list(map(float, line[1: ]))) for line in reader}
 
+def flatten(x):
+    result = []
+    for el in x:
+        if isinstance(x, collections.Iterable) and not isinstance(el, str):
+            result.extend(flatten(el))
+        else:
+            result.append(el)
+    return result
