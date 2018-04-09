@@ -9,12 +9,12 @@ jobs = [
     #  },
 
 
-    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn_topic_closest_word_to_rest', 'batch_size': 100, 'lrt': 0.01,
-     'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
-     },
-    {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn', 'batch_size': 100, 'lrt': 0.01,
-     'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
-     },
+    # {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn_topic_closest_word_to_rest', 'batch_size': 100, 'lrt': 0.01,
+    #  'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
+    #  },
+    # {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn', 'batch_size': 100, 'lrt': 0.01,
+    #  'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
+    #  },
     {'dataloader': 'single_file_str_sentences', 'model': 'word_rnn_topic_least_frequent_word', 'batch_size': 100, 'lrt': 0.01,
      'epoch_size': 10, 'n_epochs': 100, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 30, 'reuse_pred': '', 'use_pretrained_embeddings': ''
      }
