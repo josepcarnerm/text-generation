@@ -99,8 +99,7 @@ class MyDataset(Dataset):
         i = random.randint(0, (self.len - 1))
         while len(self.sentences[i]) <= self.opt.sentence_len:
             i = random.randint(0, (self.len - 1))
-        return "topic", self.sentences[i]
+        return self.sentences[i]
 
     def __len__(self):
         return self.len
-
