@@ -66,9 +66,10 @@ class Model(nn.Module):
         batch_size = input.size(0)  # Will be self.opt.batch_size at train time, 1 at test time
         encoded = self.encoder(input)
         if type(hidden) == tuple:
-            hidden = hidden[0].contiguous(), hidden[1].contiguous()
+            hidden = (hidden[0].contiguous(), hidden[1].contiguous())
         else:
             hidden = hidden.contiguous()
+        import pdb; pdb.set_trace()
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
