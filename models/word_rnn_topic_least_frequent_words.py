@@ -9,64 +9,36 @@ import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
 from nltk.corpus import wordnet as wn
-from models.word_rnn import Model as WordRNNModel
+from models.word_rnn_topic_provided import Model as WordRNNModelTopic
 
 
-class Model(WordRNNModel):
+class Model(WordRNNModelTopic):
 
     def __init__(self, opt):
         super(Model, self).__init__(opt)
 
-        self.load_word_counts()
-        self.encoder_topic = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
-        if self.opt.use_pretrained_embeddings:
-            embeddings = torch.zeros((len(self.word2idx)), self.word_dict_dim).float()
-            for k, v in self.word2idx.items():
-                embeddings[v] = self.word_dict[k]
-            self.encoder_topic.weight = nn.Parameter(embeddings)
-            self.encoder_topic.weight.requires_grad = False
-            del self.word_dict  # Clear the memory
-        for p in self.encoder_topic.parameters(): p.requires_grad = False  # Freeze weights
-
-        self.submodules = self.submodules + [self.encoder_topic]
-
-        self.losses_reconstruction = []
-        self.losses_topic = []
-
-    def load_word_counts(self):
-        if self.opt.use_pretrained_embeddings:
-            self.word_count = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_count')
-        else:
-            self.word_count = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.word_count')
-
-    def closeness_to_topics(self, words_weights, topics):
-
-        _, words = words_weights.max(1)
-
-        dist = nn.PairwiseDistance(p=2)
-
-        closeness = []
-
-        for i in range(len(topics)):
-            topic_str = self.inverted_word_dict[topics[i].data[0]]
-            topic = topics[i]
-            word = words[i]
-            synonyms = [topic.data[0]]
-            for syn in wn.synsets(topic_str):
-                synonyms += [self.word2idx[l.name()] for l in syn.lemmas() if l.name() in self.word2idx]
-
-            synonyms = torch.from_numpy(numpy.array(synonyms))
-            synonyms = Variable(synonyms).cuda() if is_remote() else Variable(synonyms)
-
-            closeness.append(torch.mean(torch.stack([dist(self.encoder(syn), self.encoder(word)) for syn in synonyms])))
-
-        return torch.stack(closeness)
-
     def analyze_topics(self, batch):
-        pass
+        batch_size, sentence_len = len(batch[0]), len(batch) - 1
+
+        # Analyze select_topics
+        examples = []
+        # Is noun, adjective, verb or adverb?
+        is_nava = lambda word: len(wn.synsets(word)) != 0
+
+        # Select "topic" as the least common noun, verb, adjective or adverb in each sentence
+        print('Analyzing topic candidates......')
+        for i in range(len(batch[0])):
+            sentence = [batch[j][i] for j in range(len(batch))]
+            words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word)])
+            examples.append({'sentence': sentence, 'topic candidates': words_sorted})
+
+        for e in examples:
+            print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+
+    def get_test_topic(self):
+        return self.select_topics([['happy']])
 
     def analyze_closeness_to_topics(self, batch):
-
         batch_size, sentence_len = len(batch[0]), len(batch) - 1
 
         # Analyze closeness to topics
@@ -74,18 +46,17 @@ class Model(WordRNNModel):
         examples = []
 
         self.copy_weights_encoder()
-        topics, _ = self.select_topics(batch)
+        topics, topic_words = self.select_topics(batch)
         if len(batch) ==2:
             batch = batch[1]
         inp, target = self.get_input_and_target(batch)
-        # Topic is provided as an initialization to the hidden state
-        hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2), \
-                 torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2)  # N_layers x batch_size x N_hidden
+        topic_enc = self.encoder(topics.view(-1, 1)).view(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)
+        hidden = topic_enc, topic_enc.clone()
 
         for i in range(len(batch[0])):
             sentence = [batch[j][i] for j in range(len(batch))]
             examples.append(
-                {'sentence': ' '.join(sentence), 'topic': self.inverted_word_dict[topics[i].data[0]], 'preds and dist': []})
+                {'sentence': ' '.join(sentence), 'topic': topic_words[i], 'preds and dist': []})
 
         # Encode/Decode sentence
         for w in range(sentence_len):
@@ -110,31 +81,57 @@ class Model(WordRNNModel):
                 ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
             ))
 
-    def analyze(self, batch):
-
-        self.analyze_topics(batch)
-        self.analyze_closeness_to_topics(batch)
-
-        # Analyze losses
-        print('Analyzing Losses......')
-        print('Average topic loss: {}. Average reconstruction loss: {}'.format(
-            numpy.mean(self.losses_topic)/self.opt.sentence_len, numpy.mean(self.losses_reconstruction)/self.opt.sentence_len
-        ))
-
     def select_topics(self, batch):
-        try:
-            batch_size = len(batch[1][0])
-        except:
-            import pdb; pdb.set_trace()
-        topics_words = batch[0]
-        topics = self.from_string_to_tensor(topics_words).view(batch_size, 1)
-        return Variable(topics).cuda() if is_remote() else Variable(topics), topics_words
 
-    def copy_weights_encoder(self):
-        # Copy weights in encoder to to encoder_topic so that both embedding layers are the same but the latter
-        # is not influenced by the topic loss
-        if not self.opt.use_pretrained_embeddings:
-            self.encoder_topic.load_state_dict(self.encoder.state_dict())
+        # batch is weirdly ordered due to Pytorch Dataset class from which we inherit in each dataloader : sizes are sentence_len x batch_size
+
+        # Is noun, adjective, verb or adverb?
+        is_nava = lambda word: len(wn.synsets(word)) != 0
+        batch_size = len(batch[0])
+
+        # Select "topic" as the least common noun, verb, adjective or adverb in each sentence
+        topics = torch.LongTensor(self.opt.n_layers_rnn, batch_size, 1)
+        topics_words = []
+        for i in range(batch_size):
+            sentence = [batch[j][i] for j in range(len(batch))]
+            words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word) and word in self.word2idx])
+            if len(words_sorted) < self.opt.n_layers_rnn:
+                n_more = self.opt.n_layers_rnn - len(words_sorted)
+                for i in range(n_more):
+                    words_sorted.append(words_sorted[0])
+            for j in range(self.opt.n_layers_rnn):
+                topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
+            topics_words.append(tuple([w[1] for w in words_sorted[:self.opt.n_layers_rnn]]))
+
+        topics = Variable(topics).cuda() if is_remote() else Variable(topics)
+        return topics, topics_words
+
+    def closeness_to_topics(self, words_weights, topics):
+
+        _, words = words_weights.max(1)
+
+        dist = nn.PairwiseDistance(p=2)
+
+        closeness = []
+
+        for i in range(self.opt.batch_size):
+            closeness_batch = []
+            for j in range(self.opt.n_layers_rnn):
+                topic_str = self.inverted_word_dict[topics[j,i].data[0]]
+                topic = topics[j,i]
+                word = words[i]
+                synonyms = [topic.data[0]]
+                for syn in wn.synsets(topic_str):
+                    synonyms += [self.word2idx[l.name()] for l in syn.lemmas() if l.name() in self.word2idx]
+                synonyms = torch.from_numpy(numpy.array(synonyms))
+                synonyms = Variable(synonyms).cuda() if is_remote() else Variable(synonyms)
+                closeness_batch.append(
+                    torch.mean(torch.stack([dist(self.encoder(syn), self.encoder(word)) for syn in synonyms]))
+                )
+            closeness_batch = torch.cat(closeness_batch)
+            closeness.append(closeness_batch.mean())
+
+        return torch.stack(closeness)
 
     def evaluate(self, batch):
 
@@ -143,12 +140,12 @@ class Model(WordRNNModel):
 
         self.copy_weights_encoder()
         topics, topics_words = self.select_topics(batch)
+        topics_enc = self.encoder(topics.view(-1, 1)) \
+                         .view(self.opt.n_layers_rnn, self.opt.batch_size, self.opt.hidden_size_rnn)
         inp, target = self.get_input_and_target(batch)
 
         # Topic is provided as an initialization to the hidden state
-        topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
-                         .permute(1, 0, 2)  # N_layers x batch_size x N_hidden
-        hidden = topic_enc, topic_enc.clone()
+        hidden = topics_enc, topics_enc.clone()
 
         # Encode/Decode sentence
         loss_topic_total_weight = 0
@@ -177,15 +174,11 @@ class Model(WordRNNModel):
 
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
-    def get_test_topic(self):
-        return self.select_topics((['happy'], [['happy']]))
-
     def test(self, prime_words, predict_len, temperature=0.8):
 
         self.copy_weights_encoder()
         topic, _ = self.get_test_topic()
-        topic_enc = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
-                         .permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        topic_enc = self.encoder(topic.view(-1, 1)).view(self.opt.n_layers_rnn, 1, self.opt.hidden_size_rnn)
         hidden = topic_enc, topic_enc.clone()
         prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 
@@ -208,13 +201,9 @@ class Model(WordRNNModel):
 
             # Add predicted character to string and use as next input
             predicted_word = self.from_predicted_index_to_string(top_i)
-            predicted += ' '+predicted_word
+            predicted += ' ' + predicted_word
             inp = Variable(self.from_string_to_tensor([predicted_word]).unsqueeze(0))
             if is_remote():
                 inp = inp.cuda()
 
         return predicted
-
-    def parameters(self):
-        params = (p for p in super(Model, self).parameters() if p.requires_grad)
-        return params
