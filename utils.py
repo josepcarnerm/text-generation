@@ -20,7 +20,7 @@ def get_savedir(opt):
         'input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir', 'data_dir', 'input_file'
     ]
 
-    if opt.model != 'word_rnn_topic':
+    if 'topic' not in  opt.model:
         ATTR_DONT_INCLUDE_IN_SAVEDIR.append('loss_alpha')
 
     savedir = RESULTS_DIR_LOCAL if is_local() else RESULTS_DIR_REMOTE
