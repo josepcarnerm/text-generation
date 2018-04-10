@@ -114,9 +114,9 @@ class Model(WordRNNModelTopic):
 
         closeness = []
 
-        for i in range(self.opt.batch_size):
+        for i in range(topics.size(1)):
             closeness_batch = []
-            for j in range(self.opt.n_layers_rnn):
+            for j in range(topics.size(0)):
                 topic_str = self.inverted_word_dict[topics[j,i].data[0]]
                 topic = topics[j,i]
                 word = words[i]
