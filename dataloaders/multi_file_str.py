@@ -1,5 +1,8 @@
+
 import numpy
-import torch, unidecode, random, os, pdb
+import torch, nltk, random, os, re, glob, pdb
+from nltk.tokenize import sent_tokenize, word_tokenize
+from torch.autograd import Variable
 from torch.utils.data import Dataset
 from collections import Counter
 
@@ -14,8 +17,6 @@ class MyDataset(Dataset):
     def __init__(self, opt, train):
         self.opt = opt
         self.train = train
-
-        self.file = open(self.opt.data_dir + self.opt.input_file, "r",encoding='utf-8', errors='ignore').read()
 
         if self.opt.use_pretrained_embeddings:
             self.glv_dict = glove2dict(self.opt.glove_dir)
@@ -32,43 +33,49 @@ class MyDataset(Dataset):
         self.len = len(self.sentences)
 
     def preprocess_sentences(self):
-        sentences_file = self.opt.data_dir + self.opt.input_file + \
+        sentences_file = self.opt.input_folder_path + \
                          ('.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
+
         if not os.path.isfile(sentences_file):
-            self.words = str(self.file)
-            for c in self.NON_DIGITS:
-                self.words = self.words.replace(c, ' ' + c + ' ')
+            folder_path = self.opt.input_folder_path + "/"
+            self.sentences = []
+            for filename in glob.glob(folder_path+'*.txt'):
+                words = open(filename, "r",encoding='utf-8', errors='ignore').read()
 
-            for c in self.END_SENTENCE:
-                self.words = self.words.replace(c, self.END_SENTENCE[0])
-            self.sentences = self.words.split(self.END_SENTENCE[0])
+                words = re.sub(' {2,}', ' ', words)
+                words = re.sub('\n{1,}', ' ', words)
 
-            self.sentences = [
-                [word.lower() for word in sentence.split(' ') if word.strip() != '']
-                for sentence in self.sentences
-            ]
+                sentence_tokenized_words = sent_tokenize(words)
+
+                use_last = True
+                while sentence_tokenized_words:
+                    sentence = sentence_tokenized_words.pop(0)
+                    sentence = word_tokenize(sentence)
+                    sentence = [word.lower() for word in sentence if word.strip() != '']
+                    # pdb.set_trace()
+                    while len(sentence) < self.opt.sentence_len:
+                        if not sentence_tokenized_words:
+                            use_last = False
+                            break
+                        sentence = sentence_tokenized_words.pop(0)
+                        sentence = word_tokenize(sentence)
+                        sentence = [word.lower() for word in sentence if word.strip() != '']
+                    if use_last:
+                        # pdb.set_trace()
+                        sentence = sentence[:self.opt.sentence_len]
+                        self.sentences.append(sentence)
 
             # When using pretrained glove vectors, only pick sentences whose words (all of them) have its corresponding glove vector
             if self.opt.use_pretrained_embeddings:
                 self.sentences = [
-                    sentence for sentence in self.sentences if \
-                    all(self.glv_dict.get(word) is not None for word in sentence) and len(sentence) > self.opt.sentence_len
+                    sentence for sentence in self.sentences if all(self.glv_dict.get(word) is not None for word in sentence)
                 ]
-
-            # self.sentences = [sentence for sentence in self.sentences if len(sentence) > self.opt.sentence_len]
-
-            # self.sentences_all = {'train': [], 'test': []}
-            # for sentence in self.sentences:
-            #     if numpy.random.uniform() > 0.75:
-            #         self.sentences_all['test'].append(sentence)
-            #     else:
-            #         self.sentences_all['train'].append(sentence)
-
 
             numpy.random.shuffle(self.sentences)
             n_train = int(len(self.sentences)*0.75)
             self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
-            torch.save(self.sentences_all, sentences_file)
+            self.topic_len = len(self.sentences)
+
         else:
             self.sentences_all = torch.load(sentences_file)
 
@@ -77,28 +84,30 @@ class MyDataset(Dataset):
         else:
             self.sentences = self.sentences_all['test']
 
+
+
     def get_words(self):
         self.words = []
         for sentence in self.sentences_all['train'] + self.sentences_all['test']:
             self.words += list(sentence)
 
     def create_word_dict(self):
-        word_dict_file = self.opt.data_dir + self.opt.input_file + '.sentences.word_dict'
+        word_dict_file = self.opt.input_folder_path + '.sentences.word_dict'
         word_dict = {w: i for i, w in enumerate(set(self.words))}
         torch.save(word_dict, word_dict_file)
 
     def create_word_count(self):
-        word_count_file = self.opt.data_dir + self.opt.input_file + '.sentences.word_count'
+        word_count_file = self.opt.input_folder_path + '.sentences.word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
 
     def create_word_dict_glove(self):
-        word_dict_file = self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict'
+        word_dict_file = self.opt.input_folder_path + '.sentences.g_word_dict'
         word_dict = {w: self.glv_dict.get(w) for w in set(self.words)}
         torch.save(word_dict, word_dict_file)
 
     def create_word_count_glove(self):
-        word_count_file = self.opt.data_dir + self.opt.input_file + '.sentences.g_word_count'
+        word_count_file = self.opt.input_folder_path + '.sentences.g_word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
 
@@ -111,4 +120,3 @@ class MyDataset(Dataset):
 
     def __len__(self):
         return self.len
-
