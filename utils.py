@@ -17,10 +17,11 @@ def get_savedir(opt):
     # models/dataloaders don't appear in the save dir
 
     ATTR_DONT_INCLUDE_IN_SAVEDIR = [
-        'input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir', 'data_dir', 'input_file'
+        'input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir', 'data_dir', 'input_file', 'device',
+        'epoch_size', 'n_epochs'
     ]
 
-    if opt.model != 'word_rnn_topic':
+    if 'topic' not in  opt.model:
         ATTR_DONT_INCLUDE_IN_SAVEDIR.append('loss_alpha')
 
     savedir = RESULTS_DIR_LOCAL if is_local() else RESULTS_DIR_REMOTE
@@ -135,6 +136,6 @@ def glove2dict(src_filename):
     dict
         Mapping words to their GloVe vectors.
     """
-    reader = csv.reader(open(src_filename, encoding="utf-8"), delimiter=' ', quoting=csv.QUOTE_NONE)
+    reader = csv.reader(open(src_filename, encoding='utf-8', errors='ignore'), delimiter=' ', quoting=csv.QUOTE_NONE)
     return {line[0]: torch.FloatTensor(list(map(float, line[1: ]))) for line in reader}
 
