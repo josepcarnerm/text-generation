@@ -47,7 +47,7 @@ def is_local():
 def log(fname, s, time=''):
     if not os.path.isdir(os.path.dirname(fname)):
             os.system("mkdir -p " + os.path.dirname(fname))
-    f = open(fname, 'a')
+    f = open(fname, 'a', encoding='utf-8', errors='ignore')
     time = '{}:'.format(time) if time != '' else time
     f.write(time + s + '\n')
     f.close()
