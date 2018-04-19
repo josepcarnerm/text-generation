@@ -95,7 +95,6 @@ class Model(nn.Module):
         if is_remote():
             inp = inp.cuda()
             target = target.cuda()
-
         return inp, target
 
     def evaluate(self, batch):

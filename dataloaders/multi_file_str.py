@@ -15,6 +15,7 @@ class MyDataset(Dataset):
     END_SENTENCE = "!?."
 
     def __init__(self, opt, train):
+
         self.opt = opt
         self.train = train
 
@@ -52,7 +53,6 @@ class MyDataset(Dataset):
                     sentence = sentence_tokenized_words.pop(0)
                     sentence = word_tokenize(sentence)
                     sentence = [word.lower() for word in sentence if word.strip() != '']
-                    # pdb.set_trace()
                     while len(sentence) < self.opt.sentence_len:
                         if not sentence_tokenized_words:
                             use_last = False
@@ -61,9 +61,8 @@ class MyDataset(Dataset):
                         sentence = word_tokenize(sentence)
                         sentence = [word.lower() for word in sentence if word.strip() != '']
                     if use_last:
-                        # pdb.set_trace()
-                        sentence = sentence[:self.opt.sentence_len]
-                        self.sentences.append(sentence)
+                        if len(sentence) > self.opt.sentence_len:
+                            self.sentences.append(sentence)
 
             # When using pretrained glove vectors, only pick sentences whose words (all of them) have its corresponding glove vector
             if self.opt.use_pretrained_embeddings:
@@ -74,6 +73,7 @@ class MyDataset(Dataset):
             numpy.random.shuffle(self.sentences)
             n_train = int(len(self.sentences)*0.75)
             self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
+            torch.save(self.sentences_all, sentences_file)
             self.topic_len = len(self.sentences)
 
         else:
@@ -83,7 +83,6 @@ class MyDataset(Dataset):
             self.sentences = self.sentences_all['train']
         else:
             self.sentences = self.sentences_all['test']
-
 
 
     def get_words(self):
@@ -113,10 +112,7 @@ class MyDataset(Dataset):
 
     def __getitem__(self, index):
         random.seed(index)
-        i = random.randint(0, (self.len - 1))
-        while len(self.sentences[i]) <= self.opt.sentence_len:
-            i = random.randint(0, (self.len - 1))
-        return self.sentences[i]
+        return random.sample(self.sentences, 1)[0]
 
     def __len__(self):
         return self.len

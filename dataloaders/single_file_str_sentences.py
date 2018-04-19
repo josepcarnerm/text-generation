@@ -34,6 +34,7 @@ class MyDataset(Dataset):
     def preprocess_sentences(self):
         sentences_file = self.opt.data_dir + self.opt.input_file + \
                          ('.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
+        pdb.set_trace()
         if not os.path.isfile(sentences_file):
             self.words = str(self.file)
             for c in self.NON_DIGITS:
@@ -54,16 +55,6 @@ class MyDataset(Dataset):
                     sentence for sentence in self.sentences if \
                     all(self.glv_dict.get(word) is not None for word in sentence) and len(sentence) > self.opt.sentence_len
                 ]
-
-            # self.sentences = [sentence for sentence in self.sentences if len(sentence) > self.opt.sentence_len]
-
-            # self.sentences_all = {'train': [], 'test': []}
-            # for sentence in self.sentences:
-            #     if numpy.random.uniform() > 0.75:
-            #         self.sentences_all['test'].append(sentence)
-            #     else:
-            #         self.sentences_all['train'].append(sentence)
-
 
             numpy.random.shuffle(self.sentences)
             n_train = int(len(self.sentences)*0.75)
