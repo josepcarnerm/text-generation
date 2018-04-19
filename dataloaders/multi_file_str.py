@@ -8,6 +8,7 @@ from collections import Counter
 
 from utils import ALL_CHARS, is_remote, glove2dict
 
+nltk.download('punkt')
 
 class MyDataset(Dataset):
 
