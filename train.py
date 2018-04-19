@@ -1,6 +1,8 @@
 # External modules imports
 from __future__ import division
 import argparse, pdb, os, numpy, time, torch
+import traceback
+
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -149,7 +151,10 @@ def train(n_epochs):
         warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
         test_sample = model.test(warmup, opt.sentence_len)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
-        print(test_sample + '\n')
+        try:
+            print(test_sample + '\n')
+        except:
+            traceback.print_exc()
 
 # --------------------------------------------------------------------------------------------------------------
 
