@@ -22,16 +22,16 @@ parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=200)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
-parser.add_argument('-dropout', type=float, default=0.50)
+parser.add_argument('-dropout', type=float, default=0.4)
 
 ############################
 # Model dependent settings #
 ############################
-parser.add_argument('-hidden_size_rnn', type=int, default=100, help='RNN hidden vector size')
+parser.add_argument('-hidden_size_rnn', type=int, default=200, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
 parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
-parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.100d.txt', help='directory to pretrained glove vectors')
+parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d.txt', help='directory to pretrained glove vectors')
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
