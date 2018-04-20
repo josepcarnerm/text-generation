@@ -37,6 +37,7 @@ parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
+parser.add_argument('-baseline_model', type=str, help='Baseline model from which to pre-init topic model weights')
 
 #################################
 # Dataloader dependent settings #
@@ -176,6 +177,10 @@ if __name__ == '__main__':
         model = getattr(mod, 'Model')(opt)
         parameters = filter(lambda p: p.requires_grad, model.parameters())
         optimizer = optim.Adam(parameters, opt.lrt)
+        import pdb; pdb.set_trace()
+        if 'baseline_model' in opt and 'initialize' in dir(model):
+            # If baseline model to preinit is provided, use it
+            model.initialize(opt.baseline_model)
 
     model = model.cuda() if utils.is_remote() else model
 

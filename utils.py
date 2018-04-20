@@ -18,7 +18,7 @@ def get_savedir(opt):
 
     ATTR_DONT_INCLUDE_IN_SAVEDIR = [
         'input_file_train', 'input_file_test', 'seed', 'gpu', 'save_dir', 'glove_dir', 'data_dir', 'input_file', 'device',
-        'epoch_size', 'n_epochs'
+        'epoch_size', 'n_epochs', 'input_folder_path', 'baseline_model'
     ]
 
     if 'topic' not in  opt.model:
