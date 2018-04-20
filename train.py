@@ -21,7 +21,7 @@ parser.add_argument('-model', type=str, default='word_rnn')  # Must be a valid f
 parser.add_argument('-batch_size', type=int, default=128)
 parser.add_argument('-lrt', type=float, default=0.0001)
 parser.add_argument('-epoch_size', type=int, default=100)
-parser.add_argument('-n_epochs', type=int, default=200)
+parser.add_argument('-n_epochs', type=int, default=2000)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
 parser.add_argument('-dropout', type=float, default=0.4)
