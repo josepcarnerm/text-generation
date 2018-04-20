@@ -46,7 +46,7 @@ parser.add_argument('-input_file', type=str, default='gutenberg', help='path to 
 parser.add_argument('-sentence_len', type=int, default=20)
 
 # Multi file
-parser.add_argument('-input_folder_path', type=str, default='data/gutenberg', help='path to input file')
+parser.add_argument('-input_folder_path', type=str, default='data_gutenberg', help='path to input file')
 
 opt = parser.parse_args()
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
