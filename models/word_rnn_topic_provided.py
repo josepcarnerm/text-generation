@@ -33,6 +33,14 @@ class Model(WordRNNModel):
         self.losses_reconstruction = []
         self.losses_topic = []
 
+    def initialize(self, baseline_model):
+        # baseline_model must be path to "checkpoint" file
+        baseline = torch.load(baseline_model).get('model')
+        self.encoder.load_state_dict(baseline.encoder.state_dict())
+        self.rnn.load_state_dict(baseline.rnn.state_dict())
+        self.decoder.load_state_dict(baseline.decoder.state_dict())
+        self.encoder_topic.load_state_dict(baseline.encoder.state_dict())  # Initialize encoder_topic with encoder
+
     def load_word_counts(self):
         if self.opt.use_pretrained_embeddings:
             self.word_count = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_count')
