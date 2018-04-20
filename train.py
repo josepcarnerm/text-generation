@@ -1,6 +1,8 @@
 # External modules imports
 from __future__ import division
 import argparse, pdb, os, numpy, time, torch
+import traceback
+
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -19,7 +21,7 @@ parser.add_argument('-model', type=str, default='word_rnn')  # Must be a valid f
 parser.add_argument('-batch_size', type=int, default=128)
 parser.add_argument('-lrt', type=float, default=0.0001)
 parser.add_argument('-epoch_size', type=int, default=100)
-parser.add_argument('-n_epochs', type=int, default=200)
+parser.add_argument('-n_epochs', type=int, default=2000)
 parser.add_argument('-gpu', type=int, default=1 if utils.is_remote() else 0, help='Which GPU to use, ignored if running in local')
 parser.add_argument('-data_dir', type=str, default='data/', help='path for preprocessed dataloader files')
 parser.add_argument('-dropout', type=float, default=0.4)
@@ -44,7 +46,7 @@ parser.add_argument('-input_file', type=str, default='gutenberg', help='path to 
 parser.add_argument('-sentence_len', type=int, default=20)
 
 # Multi file
-parser.add_argument('-input_folder_path', type=str, default='data/gutenberg', help='path to input file')
+parser.add_argument('-input_folder_path', type=str, default='data_gutenberg', help='path to input file')
 
 opt = parser.parse_args()
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
@@ -149,7 +151,10 @@ def train(n_epochs):
         warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
         test_sample = model.test(warmup, opt.sentence_len)
         utils.log(opt.save_dir + 'examples.txt', test_sample)
-        print(test_sample + '\n')
+        try:
+            print(test_sample + '\n')
+        except:
+            traceback.print_exc()
 
 # --------------------------------------------------------------------------------------------------------------
 
