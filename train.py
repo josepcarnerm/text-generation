@@ -33,10 +33,12 @@ parser.add_argument('-hidden_size_rnn', type=int, default=200, help='RNN hidden 
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
 parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-bidirectional', action='store_true', help='if true, use bidirectional LSTMs')
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d.txt', help='directory to pretrained glove vectors')
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 # Word rnn topic dependent parameters
-parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
+parser.add_argument('-loss_alpha', type=float, default=0.99, help='How much weight reconstruction loss is given over topic closeness loss')
+parser.add_argument('-baseline_model', type=str, help='Baseline model from which to pre-init topic model weights')
 
 #################################
 # Dataloader dependent settings #
@@ -176,6 +178,9 @@ if __name__ == '__main__':
         model = getattr(mod, 'Model')(opt)
         parameters = filter(lambda p: p.requires_grad, model.parameters())
         optimizer = optim.Adam(parameters, opt.lrt)
+        if opt.baseline_model and 'initialize' in dir(model):
+            # If baseline model to preinit is provided, use it
+            model.initialize(opt.baseline_model)
 
     model = model.cuda() if utils.is_remote() else model
 

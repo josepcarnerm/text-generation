@@ -16,8 +16,14 @@ class Model(nn.Module):
         self.N_WORDS = len(self.word2idx)
 
         self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
-        self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=self.opt.dropout)
-        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
+        if self.opt.bidirectional:
+            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn,
+                               batch_first=False, bidirectional=True, dropout=self.opt.dropout)
+            self.decoder = nn.Linear(self.opt.hidden_size_rnn*2, self.N_WORDS)
+        else:
+            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=self.opt.dropout)
+            self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
+
 
         if self.opt.use_pretrained_embeddings:
             embeddings = torch.zeros((len(self.word2idx)), self.word_dict_dim).float()
@@ -70,6 +76,7 @@ class Model(nn.Module):
         else:
             hidden = hidden.contiguous()
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
+
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
@@ -121,7 +128,11 @@ class Model(nn.Module):
         return torch.exp(loss.data[0])
 
     def init_hidden(self, batch_size):
-        return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)),
+        if self.opt.bidirectional:
+            return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn*2, batch_size, self.opt.hidden_size_rnn)),
+                    zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn*2, batch_size, self.opt.hidden_size_rnn)))
+        else:
+            return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)),
                     zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)))
 
     def test(self, prime_words, predict_len, temperature=0.8):

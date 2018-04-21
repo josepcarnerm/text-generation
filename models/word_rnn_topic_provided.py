@@ -33,6 +33,14 @@ class Model(WordRNNModel):
         self.losses_reconstruction = []
         self.losses_topic = []
 
+    def initialize(self, baseline_model):
+        # baseline_model must be path to "checkpoint" file
+        baseline = torch.load(baseline_model).get('model')
+        self.encoder.load_state_dict(baseline.encoder.state_dict())
+        self.rnn.load_state_dict(baseline.rnn.state_dict())
+        self.decoder.load_state_dict(baseline.decoder.state_dict())
+        self.encoder_topic.load_state_dict(baseline.encoder.state_dict())  # Initialize encoder_topic with encoder
+
     def load_word_counts(self):
         if self.opt.use_pretrained_embeddings:
             self.word_count = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_count')
@@ -79,8 +87,12 @@ class Model(WordRNNModel):
             batch = batch[1]
         inp, target = self.get_input_and_target(batch)
         # Topic is provided as an initialization to the hidden state
-        hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2), \
-                 torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2)  # N_layers x batch_size x N_hidden
+        if self.opt.bidirectional:
+            hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1).permute(1, 0, 2), \
+                     torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1).permute(1, 0, 2)  # N_layers x batch_size x N_hidden
+        else:
+            hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2), \
+                     torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1).permute(1, 0, 2)  # N_layers x batch_size x N_hidden
 
         for i in range(len(batch[0])):
             sentence = [batch[j][i] for j in range(len(batch))]
@@ -146,8 +158,13 @@ class Model(WordRNNModel):
         inp, target = self.get_input_and_target(batch)
 
         # Topic is provided as an initialization to the hidden state
-        topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
-                         .contiguous().permute(1, 0, 2)  # N_layers x batch_size x N_hidden
+        if self.opt.bidirectional:
+            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
+                .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        else:
+            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
+                             .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+
         hidden = topic_enc, topic_enc.clone()
 
         # Encode/Decode sentence
@@ -184,8 +201,12 @@ class Model(WordRNNModel):
 
         self.copy_weights_encoder()
         topic, _ = self.get_test_topic()
-        topic_enc = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
-                         .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        if self.opt.bidirectional:
+            topic_enc = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn*2)], 1) \
+                .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        else:
+            topic_enc = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn)], 1) \
+                             .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
         hidden = topic_enc, topic_enc.clone()
         prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 
