@@ -37,7 +37,7 @@ parser.add_argument('-bidirectional', action='store_true', help='if true, use bi
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d.txt', help='directory to pretrained glove vectors')
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 # Word rnn topic dependent parameters
-parser.add_argument('-loss_alpha', type=float, default=0.5, help='How much weight reconstruction loss is given over topic closeness loss')
+parser.add_argument('-loss_alpha', type=float, default=0.99, help='How much weight reconstruction loss is given over topic closeness loss')
 parser.add_argument('-baseline_model', type=str, help='Baseline model from which to pre-init topic model weights')
 
 #################################

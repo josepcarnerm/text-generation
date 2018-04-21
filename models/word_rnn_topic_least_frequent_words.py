@@ -50,7 +50,10 @@ class Model(WordRNNModelTopic):
         if len(batch) ==2:
             batch = batch[1]
         inp, target = self.get_input_and_target(batch)
-        topic_enc = self.encoder(topics.view(-1, 1)).view(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)
+        if self.opt.bidirectional:
+            topic_enc = self.encoder(topics.view(-1, 1)).view(self.opt.n_layers_rnn*2, batch_size, self.opt.hidden_size_rnn)
+        else:
+            topic_enc = self.encoder(topics.view(-1, 1)).view(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)
         hidden = topic_enc, topic_enc.clone()
 
         for i in range(len(batch[0])):
@@ -103,6 +106,8 @@ class Model(WordRNNModelTopic):
                 topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
             topics_words.append(tuple([w[1] for w in words_sorted[:self.opt.n_layers_rnn]]))
 
+        if self.opt.bidirectional:
+            topics = torch.cat([topics, topics], 2)
         topics = Variable(topics).cuda() if is_remote() else Variable(topics)
         return topics, topics_words
 
@@ -140,8 +145,12 @@ class Model(WordRNNModelTopic):
 
         self.copy_weights_encoder()
         topics, topics_words = self.select_topics(batch)
-        topics_enc = self.encoder(topics.view(-1, 1)) \
-                         .view(self.opt.n_layers_rnn, self.opt.batch_size, self.opt.hidden_size_rnn)
+        if self.opt.bidirectional:
+            topics_enc = self.encoder(topics.view(-1, 1)) \
+                .view(self.opt.n_layers_rnn*2, self.opt.batch_size, self.opt.hidden_size_rnn)
+        else:
+            topics_enc = self.encoder(topics.view(-1, 1)) \
+                             .view(self.opt.n_layers_rnn, self.opt.batch_size, self.opt.hidden_size_rnn)
         inp, target = self.get_input_and_target(batch)
 
         # Topic is provided as an initialization to the hidden state
@@ -178,7 +187,10 @@ class Model(WordRNNModelTopic):
 
         self.copy_weights_encoder()
         topic, _ = self.get_test_topic()
-        topic_enc = self.encoder(topic.view(-1, 1)).view(self.opt.n_layers_rnn, 1, self.opt.hidden_size_rnn)
+        if self.opt.bidirectional:
+            topic_enc = self.encoder(topic.view(-1, 1)).view(self.opt.n_layers_rnn*2, 1, self.opt.hidden_size_rnn)
+        else:
+            topic_enc = self.encoder(topic.view(-1, 1)).view(self.opt.n_layers_rnn, 1, self.opt.hidden_size_rnn)
         hidden = topic_enc, topic_enc.clone()
         prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 

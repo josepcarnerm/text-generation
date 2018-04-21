@@ -21,7 +21,7 @@ def get_savedir(opt):
         'epoch_size', 'n_epochs', 'input_folder_path', 'baseline_model'
     ]
 
-    if 'topic' not in  opt.model:
+    if 'topic' not in opt.model:
         ATTR_DONT_INCLUDE_IN_SAVEDIR.append('loss_alpha')
 
     savedir = RESULTS_DIR_LOCAL if is_local() else RESULTS_DIR_REMOTE
