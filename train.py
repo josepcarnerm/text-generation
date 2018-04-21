@@ -178,7 +178,6 @@ if __name__ == '__main__':
         model = getattr(mod, 'Model')(opt)
         parameters = filter(lambda p: p.requires_grad, model.parameters())
         optimizer = optim.Adam(parameters, opt.lrt)
-        import pdb; pdb.set_trace()
         if opt.baseline_model and 'initialize' in dir(model):
             # If baseline model to preinit is provided, use it
             model.initialize(opt.baseline_model)
