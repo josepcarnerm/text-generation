@@ -60,8 +60,7 @@ def run_job(job):
 
     name = ''
     for k, v in sorted(job.items()):
-        import pdb; pdb.set_trace()
-        if 'k' not in ['baseline_model']:
+        if k not in ['baseline_model']:
             name += ('' if name == '' else '-') + ('{}={}'.format(k,v) if v!="" else k)
 
     command_srun = (
