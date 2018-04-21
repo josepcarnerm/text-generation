@@ -16,7 +16,13 @@ class Model(nn.Module):
         self.N_WORDS = len(self.word2idx)
 
         self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
-        self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=self.opt.dropout)
+        if self.opt.bidirectional:
+            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn,
+                               batch_first = False, bidirectional = True, dropout = self.opt.dropout)
+        else:
+            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=self.opt.dropout)
+        if self.opt.bidirectional:
+            self.opt.hidden_size_rnn = self.opt.hidden_size_rnn * 2
         self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
         if self.opt.use_pretrained_embeddings:
@@ -121,8 +127,8 @@ class Model(nn.Module):
         return torch.exp(loss.data[0])
 
     def init_hidden(self, batch_size):
-        return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)),
-                    zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn, batch_size, self.opt.hidden_size_rnn)))
+        return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn * 2, batch_size, self.opt.hidden_size_rnn)),
+                    zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn * 2, batch_size, self.opt.hidden_size_rnn)))
 
     def test(self, prime_words, predict_len, temperature=0.8):
 
