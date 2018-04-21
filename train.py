@@ -33,6 +33,7 @@ parser.add_argument('-hidden_size_rnn', type=int, default=200, help='RNN hidden 
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
 parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-bidirectional', action='store_true', help='if true, use bidirectional LSTMs')
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d.txt', help='directory to pretrained glove vectors')
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 # Word rnn topic dependent parameters
