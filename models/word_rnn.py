@@ -75,10 +75,9 @@ class Model(nn.Module):
             hidden = (hidden[0].contiguous(), hidden[1].contiguous())
         else:
             hidden = hidden.contiguous()
-        try:
-            output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
-        except:
-            import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
+        output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
+
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
