@@ -60,7 +60,7 @@ def run_job(job):
 
     name = ''
     for k, v in sorted(job.items()):
-        if k not in ['baseline_model']:
+        if k in ['baseline_model', 'glove_dir']:
             name += ('' if name == '' else '-') + ('{}={}'.format(k,v) if v!="" else k)
 
     command_srun = (
