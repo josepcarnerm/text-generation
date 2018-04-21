@@ -19,11 +19,13 @@ class Model(nn.Module):
         if self.opt.bidirectional:
             self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn,
                                batch_first = False, bidirectional = True, dropout = self.opt.dropout)
+            self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
         else:
             self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=self.opt.dropout)
+            self.decoder = nn.Linear(self.opt.hidden_size_rnn * 2, self.N_WORDS)
         if self.opt.bidirectional:
-            self.opt.hidden_size_rnn = self.opt.hidden_size_rnn * 2
-        self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
+            self.opt.hidden_size_rnn = self.opt.n_layers_rnn * 2
+
 
         if self.opt.use_pretrained_embeddings:
             embeddings = torch.zeros((len(self.word2idx)), self.word_dict_dim).float()
