@@ -33,9 +33,12 @@ class Model(WordRNNTopic):
             examples.append({'sentence': ' '.join(sentence), 'closest_word_to_centroid': closest_word_to_centroid,
                              'distances_to_centroid': distances_to_centroid})
         for e in examples:
-            print('Sentence: {}. Closest word to centroid: {}. Distances to centroid: {}.'.format(
-                e['sentence'], e['closest_word_to_centroid'], e['distances_to_centroid'])
-            )
+            try:
+                print('Sentence: {}. Closest word to centroid: {}. Distances to centroid: {}.'.format(
+                    e['sentence'], e['closest_word_to_centroid'], e['distances_to_centroid'])
+                )
+            except:
+                print('Exception when printing')
 
     def select_topics(self, batch):
 

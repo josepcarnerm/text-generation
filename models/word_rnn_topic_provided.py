@@ -118,9 +118,12 @@ class Model(WordRNNModel):
                     'closeness to sentence topic': closeness[i].data[0]
                 })
         for e in examples:
-            print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
-                ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
-            ))
+            try:
+                print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
+                    ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
+                ))
+            except:
+                print('Exception when printing')
 
     def analyze(self, batch):
 
