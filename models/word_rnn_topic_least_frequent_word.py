@@ -34,7 +34,10 @@ class Model(WordRNNModelTopic):
             examples.append({'sentence': sentence, 'topic candidates': words_sorted})
 
         for e in examples:
-            print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+            try:
+                print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+            except:
+                print('Exception when printing')
 
     def get_test_topic(self):
         return self.select_topics([['happy']])

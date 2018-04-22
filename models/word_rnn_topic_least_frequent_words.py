@@ -33,7 +33,10 @@ class Model(WordRNNModelTopic):
             examples.append({'sentence': sentence, 'topic candidates': words_sorted})
 
         for e in examples:
-            print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+            try:
+                print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+            except:
+                print('Exception when printing')
 
     def get_test_topic(self):
         return self.select_topics([['happy']])
@@ -80,9 +83,12 @@ class Model(WordRNNModelTopic):
                     'closeness to sentence topic': closeness[i].data[0]
                 })
         for e in examples:
-            print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
-                ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
-            ))
+            try:
+                print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
+                    ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
+                ))
+            except:
+                print('Exception when printing')
 
     def select_topics(self, batch):
 
