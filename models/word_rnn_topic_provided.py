@@ -110,6 +110,7 @@ class Model(WordRNNModel):
             )).unsqueeze(1)).float()
             loss_topic_weights = loss_topic_weights.cuda() if is_remote() else loss_topic_weights
             closeness = self.closeness_to_topics(output, topics)
+            import pdb; pdb.set_trace()
 
             for i in range(len(batch[0])):
                 examples[i]['preds and dist'].append({
@@ -132,8 +133,8 @@ class Model(WordRNNModel):
 
         # Analyze losses
         print('Analyzing Losses......')
-        print('Average topic loss: {}. Average reconstruction loss: {}'.format(
-            numpy.mean(self.losses_topic)/self.opt.sentence_len, numpy.mean(self.losses_reconstruction)/self.opt.sentence_len
+        print('Last topic loss: {}. Last reconstruction loss: {}'.format(
+            self.losses_topic[-1]/self.opt.sentence_len, self.losses_reconstruction[-1]/self.opt.sentence_len
         ))
 
     def select_topics(self, batch):
