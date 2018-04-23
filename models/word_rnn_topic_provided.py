@@ -132,8 +132,8 @@ class Model(WordRNNModel):
 
         # Analyze losses
         print('Analyzing Losses......')
-        print('Average topic loss: {}. Average reconstruction loss: {}'.format(
-            numpy.mean(self.losses_topic)/self.opt.sentence_len, numpy.mean(self.losses_reconstruction)/self.opt.sentence_len
+        print('Last topic loss: {}. Last reconstruction loss: {}'.format(
+            self.losses_topic[-1]/self.opt.sentence_len, self.losses_reconstruction[-1]/self.opt.sentence_len
         ))
 
     def select_topics(self, batch):
