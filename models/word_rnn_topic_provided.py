@@ -106,8 +106,8 @@ class Model(WordRNNModel):
             # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
             # _, words_i = output.max(1)
             # Sample from the network as a multinomial distribution
-            output_dist = output.data.view(-1).div(0.8).exp()
-            words_i = torch.multinomial(output_dist, 1)[0]
+            output_dist = output.div(0.8).exp()
+            words_i = torch.multinomial(output_dist, 1)
 
             loss_topic_weights = Variable(torch.from_numpy(numpy.array(
                 [1 / self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
