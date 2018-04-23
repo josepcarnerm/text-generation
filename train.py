@@ -135,6 +135,7 @@ def train(n_epochs):
             valid_loss.append(test_epoch(opt.epoch_size))
         except:
             print('Error when testing epoch')
+            valid_loss.append(1e6)
 
         # If model improved, save it
         if valid_loss[-1] < best_valid_loss:
