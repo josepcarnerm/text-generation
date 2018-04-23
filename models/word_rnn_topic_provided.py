@@ -110,7 +110,6 @@ class Model(WordRNNModel):
             )).unsqueeze(1)).float()
             loss_topic_weights = loss_topic_weights.cuda() if is_remote() else loss_topic_weights
             closeness = self.closeness_to_topics(output, topics)
-            import pdb; pdb.set_trace()
 
             for i in range(len(batch[0])):
                 examples[i]['preds and dist'].append({
