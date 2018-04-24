@@ -113,6 +113,8 @@ def train_epoch():
         loss_batch.backward()
         optimizer.step()
 
+    import pdb; pdb.set_trace()
+
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
 
@@ -129,6 +131,8 @@ def test_epoch():
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
+
+    import pdb; pdb.set_trace()
 
     return total_loss / opt.n_epochs
 
