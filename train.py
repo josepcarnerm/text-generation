@@ -91,6 +91,8 @@ def get_batch(dataset):
 
 get_batch(train_dataset)
 get_batch(test_dataset)
+print('Train dataset loaded with {} sentences of {} words each. {} words in total'.format(len(train_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
+print('Test dataset loaded with {} sentences of {} words each. {} words in total'.format(len(test_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -112,6 +114,7 @@ def train_epoch():
         # Backward step
         loss_batch.backward()
         optimizer.step()
+        print('Time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch))
 
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
@@ -129,6 +132,7 @@ def test_epoch():
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
+        print('Time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch))
 
     return total_loss / opt.n_epochs
 
