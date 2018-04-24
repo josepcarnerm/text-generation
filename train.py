@@ -78,6 +78,8 @@ datasetClass = getattr(mod, 'MyDataset')
 
 train_dataloader = DataLoader(datasetClass(opt, train=True), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
 test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+
+import pdb; pdb.set_trace()
 # --------------------------------------------------------------------------------------------------------------
 
 
