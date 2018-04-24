@@ -187,6 +187,7 @@ class Model(WordRNNModel):
 
             # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
             _, words_i = output.max(1)
+            last_output = words_i
             loss_topic_weights = Variable(torch.from_numpy(numpy.array(
                 [1/self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
             )).unsqueeze(1)).float()
