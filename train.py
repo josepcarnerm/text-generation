@@ -75,11 +75,22 @@ print("Saving to " + opt.save_dir)
 print('Initializing dataloader...')
 mod = __import__('dataloaders.{}'.format(opt.dataloader), fromlist=['MyDataset'])
 datasetClass = getattr(mod, 'MyDataset')
+train_dataset = datasetClass(opt, train=True)
+test_dataset = datasetClass(opt, train=False)
+train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
 
-train_dataloader = DataLoader(datasetClass(opt, train=True), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
-test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+def get_batch(dataset):
+    batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]
+    for b in range(opt.batch_size):
+        item = dataset.__getitem__()
+        for i in range(opt.sentence_len+1):
+            batch[i][b] = item[i]
+    import pdb; pdb.set_trace()
+    return batch
 
-import pdb; pdb.set_trace()
+get_batch(train_dataset)
+get_batch(test_dataset)
 # --------------------------------------------------------------------------------------------------------------
 
 
