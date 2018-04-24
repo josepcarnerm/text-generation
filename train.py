@@ -84,6 +84,7 @@ test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batc
 # TRAIN --------------------------------------------------------------------------------------------------------
 def train_epoch(nsteps):
     total_loss = 0
+    n_iters = 0
     model.train()
 
     for iter, batch in enumerate(train_dataloader):
@@ -100,18 +101,22 @@ def train_epoch(nsteps):
         loss_batch.backward()
         optimizer.step()
 
+        n_iters += 1
+
         if iter == nsteps:
             import pdb; pdb.set_trace()
             if 'analyze' in dir(model):
                 model.analyze([sentence[:5] for sentence in batch])
             break
 
-    return total_loss / nsteps
+    return total_loss / n_iters
 
 
 def test_epoch(nsteps):
     total_loss = 0
+    n_iters = 0
     model.eval()
+
     for iter, batch in enumerate(test_dataloader):
         print(iter)
 
@@ -120,10 +125,12 @@ def test_epoch(nsteps):
         print(loss_batch.data[0] / opt.sentence_len)
         total_loss += loss_batch.data[0] / opt.sentence_len
 
+        n_iters += 1
+
         if iter == nsteps:
             break
 
-    return total_loss / nsteps
+    return total_loss / n_iters
 
 
 def train(n_epochs):
