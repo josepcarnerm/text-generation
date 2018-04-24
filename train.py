@@ -99,7 +99,7 @@ def train_epoch():
     total_loss = 0
     model.train()
 
-    for i in range(opt.n_epochs):
+    for i in range(opt.epoch_size):
 
         batch = get_batch(train_dataset)
         optimizer.zero_grad()
@@ -125,7 +125,7 @@ def test_epoch():
     total_loss = 0
     model.eval()
 
-    for i in range(opt.n_epochs):
+    for i in range(opt.epoch_size):
         batch = get_batch(test_dataset)
 
         # Forward step
