@@ -87,7 +87,6 @@ def get_batch(dataset):
         item = dataset.__getitem__(random.randint(0,len(dataset)))
         for i in range(opt.sentence_len+1):
             batch[i][b] = item[i]
-    import pdb; pdb.set_trace()
     return batch
 
 get_batch(train_dataset)
@@ -96,13 +95,13 @@ get_batch(test_dataset)
 
 
 # TRAIN --------------------------------------------------------------------------------------------------------
-def train_epoch(nsteps):
+def train_epoch():
     total_loss = 0
-    n_iters = 0
     model.train()
 
-    for iter, batch in enumerate(train_dataloader):
+    for i in range(opt.n_epochs):
 
+        batch = get_batch(train_dataset)
         optimizer.zero_grad()
         model.zero_grad()
 
@@ -115,23 +114,18 @@ def train_epoch(nsteps):
         loss_batch.backward()
         optimizer.step()
 
-        n_iters += 1
+    if 'analyze' in dir(model):
+        model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
 
-        if iter == nsteps:
-            import pdb; pdb.set_trace()
-            if 'analyze' in dir(model):
-                model.analyze([sentence[:5] for sentence in batch])
-            break
-
-    return total_loss / n_iters
+    return total_loss / opt.n_epochs
 
 
-def test_epoch(nsteps):
+def test_epoch():
     total_loss = 0
-    n_iters = 0
     model.eval()
 
-    for iter, batch in enumerate(test_dataloader):
+    for i in range(opt.n_epochs):
+        batch = get_batch(test_dataset)
         print(iter)
 
         # Forward step
@@ -139,12 +133,7 @@ def test_epoch(nsteps):
         print(loss_batch.data[0] / opt.sentence_len)
         total_loss += loss_batch.data[0] / opt.sentence_len
 
-        n_iters += 1
-
-        if iter == nsteps:
-            break
-
-    return total_loss / n_iters
+    return total_loss / opt.n_epochs
 
 
 def train(n_epochs):
@@ -156,9 +145,9 @@ def train(n_epochs):
     best_valid_loss = 1e6
     train_loss, valid_loss = [], []
     for i in range(0, n_epochs):
-        train_loss.append(train_epoch(opt.epoch_size))
+        train_loss.append(train_epoch())
         try:
-            valid_loss.append(test_epoch(opt.epoch_size))
+            valid_loss.append(test_epoch())
         except:
             print('Error when testing epoch')
             valid_loss.append(1e6)
