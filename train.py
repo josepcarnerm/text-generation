@@ -119,7 +119,7 @@ def train_epoch():
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
 
-    return total_loss / opt.n_epochs
+    return total_loss / opt.epoch_size
 
 
 def test_epoch():
@@ -133,8 +133,7 @@ def test_epoch():
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
         print('Time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
-
-    return total_loss / opt.n_epochs
+    return total_loss / opt.epoch_size
 
 
 def train(n_epochs):
