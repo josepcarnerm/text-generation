@@ -32,6 +32,7 @@ class MyDataset(Dataset):
         else:
             self.create_word_dict()
             self.create_word_count()
+        import pdb; pdb.set_trace()
         self.len = len(self.sentences)
 
     def preprocess_sentences(self):
