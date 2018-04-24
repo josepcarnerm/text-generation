@@ -87,7 +87,7 @@ def train_epoch(nsteps):
     model.train()
 
     for iter, batch in enumerate(train_dataloader):
-        print(iter)
+
         optimizer.zero_grad()
         model.zero_grad()
 
@@ -100,6 +100,7 @@ def train_epoch(nsteps):
         optimizer.step()
 
         if iter == nsteps:
+            import pdb; pdb.set_trace()
             if 'analyze' in dir(model):
                 model.analyze([sentence[:5] for sentence in batch])
             break
