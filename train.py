@@ -97,7 +97,7 @@ print('Test dataset loaded with {} sentences of {} words each. {} words in total
 
 
 # TRAIN --------------------------------------------------------------------------------------------------------
-def train_epoch():
+def train_epoch(epoch):
     total_loss = 0
     model.train()
 
@@ -114,7 +114,8 @@ def train_epoch():
         # Backward step
         loss_batch.backward()
         optimizer.step()
-        print('Time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+        if epoch<10:
+            print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
@@ -122,7 +123,7 @@ def train_epoch():
     return total_loss / opt.epoch_size
 
 
-def test_epoch():
+def test_epoch(epoch):
     total_loss = 0
     model.eval()
 
@@ -132,7 +133,8 @@ def test_epoch():
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
-        print('Time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+        if epoch<10:
+            print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
     return total_loss / opt.epoch_size
 
 
@@ -145,9 +147,9 @@ def train(n_epochs):
     best_valid_loss = 1e6
     train_loss, valid_loss = [], []
     for i in range(0, n_epochs):
-        train_loss.append(train_epoch())
+        train_loss.append(train_epoch(i))
         try:
-            valid_loss.append(test_epoch())
+            valid_loss.append(test_epoch(i))
         except:
             print('Error when testing epoch')
             valid_loss.append(1e6)
