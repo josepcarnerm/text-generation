@@ -1,6 +1,7 @@
 # External modules imports
 from __future__ import division
 import argparse, pdb, os, numpy, time, torch
+import random
 import traceback
 
 import torch.optim as optim
@@ -83,7 +84,7 @@ test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=Tr
 def get_batch(dataset):
     batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]
     for b in range(opt.batch_size):
-        item = dataset.__getitem__()
+        item = dataset.__getitem__(random.randint(0,len(dataset)))
         for i in range(opt.sentence_len+1):
             batch[i][b] = item[i]
     import pdb; pdb.set_trace()
