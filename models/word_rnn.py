@@ -121,7 +121,6 @@ class Model(nn.Module):
             last_output = self.select_word_index_from_output(output)
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
-        import pdb; pdb.set_trace()
         return loss
 
     def perplexity(self, batch):
