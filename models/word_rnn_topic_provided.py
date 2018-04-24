@@ -197,7 +197,6 @@ class Model(WordRNNModel):
 
         loss_topic = torch.mean(loss_topic/loss_topic_total_weight)
 
-        import pdb; pdb.set_trace()
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
