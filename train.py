@@ -93,7 +93,6 @@ def train_epoch(nsteps):
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
-        import pdb; pdb.set_trace()
 
         # Backward step
         loss_batch.backward()
