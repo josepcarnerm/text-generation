@@ -107,7 +107,6 @@ def train_epoch():
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        print((iter, loss_batch.data[0] / opt.sentence_len))
         total_loss += loss_batch.data[0] / opt.sentence_len
 
         # Backward step
@@ -129,7 +128,6 @@ def test_epoch():
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        print((iter, loss_batch.data[0] / opt.sentence_len))
         total_loss += loss_batch.data[0] / opt.sentence_len
 
     return total_loss / opt.n_epochs
@@ -150,9 +148,6 @@ def train(n_epochs):
         except:
             print('Error when testing epoch')
             valid_loss.append(1e6)
-
-        import pdb;
-        pdb.set_trace()
 
         # If model improved, save it
         if valid_loss[-1] < best_valid_loss:
