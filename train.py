@@ -115,8 +115,6 @@ def test_epoch(nsteps):
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
-        import pdb;
-        pdb.set_trace()
 
         if iter == nsteps:
             break
@@ -139,6 +137,9 @@ def train(n_epochs):
         except:
             print('Error when testing epoch')
             valid_loss.append(1e6)
+
+        import pdb;
+        pdb.set_trace()
 
         # If model improved, save it
         if valid_loss[-1] < best_valid_loss:
