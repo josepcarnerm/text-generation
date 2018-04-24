@@ -107,7 +107,7 @@ def train_epoch():
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        print(loss_batch.data[0] / opt.sentence_len)
+        print((iter, loss_batch.data[0] / opt.sentence_len))
         total_loss += loss_batch.data[0] / opt.sentence_len
 
         # Backward step
@@ -126,11 +126,10 @@ def test_epoch():
 
     for i in range(opt.n_epochs):
         batch = get_batch(test_dataset)
-        print(iter)
 
         # Forward step
         loss_batch = model.evaluate(batch)
-        print(loss_batch.data[0] / opt.sentence_len)
+        print((iter, loss_batch.data[0] / opt.sentence_len))
         total_loss += loss_batch.data[0] / opt.sentence_len
 
     return total_loss / opt.n_epochs
