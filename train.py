@@ -201,6 +201,7 @@ if __name__ == '__main__':
         optimizer = optim.Adam(parameters, opt.lrt)
         if opt.baseline_model and 'initialize' in dir(model):
             # If baseline model to preinit is provided, use it
+            print('Initializing with baseline model')
             model.initialize(opt.baseline_model)
 
     model = model.cuda() if utils.is_remote() else model
