@@ -36,6 +36,7 @@ class Model(WordRNNModel):
     def initialize(self, baseline_model):
         # baseline_model must be path to "checkpoint" file
         baseline = torch.load(baseline_model).get('model')
+        import pdb; pdb.set_trace()
         self.encoder.load_state_dict(baseline.encoder.state_dict())
         self.rnn.load_state_dict(baseline.rnn.state_dict())
         self.decoder.load_state_dict(baseline.decoder.state_dict())
@@ -200,7 +201,6 @@ class Model(WordRNNModel):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        import pdb; pdb.set_trace()
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
     def get_test_topic(self):
