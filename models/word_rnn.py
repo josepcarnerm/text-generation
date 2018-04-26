@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from utils import is_remote, zeros
+import pickle
 
 
 class Model(nn.Module):
@@ -40,12 +41,19 @@ class Model(nn.Module):
 
     def load_word_dicts(self):
         if self.opt.use_pretrained_embeddings:
-            self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict')
+            # self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict')
+            pkl_file = open(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict', 'rb')
+            self.word_dict = pickle.load(pkl_file)
+            pkl_file.close()
+
             self.opt.hidden_size_rnn = self.word_dict['the'].size(0)
             self.word_dict_dim = self.opt.hidden_size_rnn
             self.word2idx = {word: idx for idx, word in enumerate((self.word_dict.keys()))}
         else:
-            self.word2idx = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.word_dict')
+            # self.word2idx = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.word_dict')
+            pkl_file = open(self.opt.data_dir + self.opt.input_file + '.sentences.word_dict', 'rb')
+            self.word2idx = pickle.load(pkl_file)
+            pkl_file.close()
 
         self.inverted_word_dict = {i: w for w, i in self.word2idx.items()}
 

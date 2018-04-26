@@ -1,6 +1,6 @@
 
 import numpy
-import torch, nltk, random, os, re, glob, pdb
+import torch, nltk, random, os, re, glob, pdb, pickle
 from nltk.tokenize import sent_tokenize, word_tokenize
 from torch.autograd import Variable
 from torch.utils.data import Dataset
@@ -76,7 +76,12 @@ class MyDataset(Dataset):
             numpy.random.shuffle(self.sentences)
             n_train = int(len(self.sentences)*0.75)
             self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
-            torch.save(self.sentences_all, sentences_file)
+            # torch.save(self.sentences_all, sentences_file)
+
+            output = open(sentences_file, 'wb')
+            pickle.dump(self.sentences_all, output)
+            output.close()
+
             self.topic_len = len(self.sentences)
 
         else:
@@ -96,22 +101,38 @@ class MyDataset(Dataset):
     def create_word_dict(self):
         word_dict_file = self.opt.input_folder_path + '.sentences.word_dict'
         word_dict = {w: i for i, w in enumerate(set(self.words))}
-        torch.save(word_dict, word_dict_file)
+        # torch.save(word_dict, word_dict_file)
+
+        output = open(word_dict_file, 'wb')
+        pickle.dump(word_dict, output)
+        output.close()
 
     def create_word_count(self):
         word_count_file = self.opt.input_folder_path + '.sentences.word_count'
         word_count = Counter(self.words)
-        torch.save(word_count, word_count_file)
+        # torch.save(word_count, word_count_file)
+
+        output = open(word_count_file, 'wb')
+        pickle.dump(word_count, output)
+        output.close()
 
     def create_word_dict_glove(self):
         word_dict_file = self.opt.input_folder_path + '.sentences.g_word_dict'
         word_dict = {w: self.glv_dict.get(w) for w in set(self.words)}
-        torch.save(word_dict, word_dict_file)
+        # torch.save(word_dict, word_dict_file)
+
+        output = open(word_dict_file, 'wb')
+        pickle.dump(word_dict, output)
+        output.close()
 
     def create_word_count_glove(self):
         word_count_file = self.opt.input_folder_path + '.sentences.g_word_count'
         word_count = Counter(self.words)
-        torch.save(word_count, word_count_file)
+        # torch.save(word_count, word_count_file)
+
+        output = open(word_count_file, 'wb')
+        pickle.dump(word_count, output)
+        output.close()
 
     def __getitem__(self, index):
         random.seed(index)
