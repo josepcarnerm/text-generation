@@ -1,6 +1,7 @@
 # External modules imports
 from __future__ import division
 import argparse, pdb, os, numpy, time, torch
+import random
 import traceback
 
 import torch.optim as optim
@@ -75,18 +76,34 @@ print("Saving to " + opt.save_dir)
 print('Initializing dataloader...')
 mod = __import__('dataloaders.{}'.format(opt.dataloader), fromlist=['MyDataset'])
 datasetClass = getattr(mod, 'MyDataset')
+train_dataset = datasetClass(opt, train=True)
+test_dataset = datasetClass(opt, train=False)
+train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
 
-train_dataloader = DataLoader(datasetClass(opt, train=True), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
-test_dataloader = DataLoader(datasetClass(opt, train=False), batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+def get_batch(dataset):
+    batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]
+    for b in range(opt.batch_size):
+        item = dataset.__getitem__(random.randint(0,len(dataset)))
+        for i in range(opt.sentence_len+1):
+            batch[i][b] = item[i]
+    return batch
+
+get_batch(train_dataset)
+get_batch(test_dataset)
+print('Train dataset loaded with {} sentences of {} words each. {} words in total'.format(len(train_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
+print('Test dataset loaded with {} sentences of {} words each. {} words in total'.format(len(test_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
 # --------------------------------------------------------------------------------------------------------------
 
 
 # TRAIN --------------------------------------------------------------------------------------------------------
-def train_epoch(nsteps):
+def train_epoch(epoch):
     total_loss = 0
     model.train()
 
-    for iter, batch in enumerate(train_dataloader):
+    for i in range(opt.epoch_size):
+
+        batch = get_batch(train_dataset)
         optimizer.zero_grad()
         model.zero_grad()
 
@@ -97,28 +114,28 @@ def train_epoch(nsteps):
         # Backward step
         loss_batch.backward()
         optimizer.step()
+        if epoch<10:
+            print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
-        if iter == nsteps:
-            if 'analyze' in dir(model):
-                model.analyze([sentence[:5] for sentence in batch])
-            break
+    if 'analyze' in dir(model):
+        model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
 
-    return total_loss / nsteps
+    return total_loss / opt.epoch_size
 
 
-def test_epoch(nsteps):
+def test_epoch(epoch):
     total_loss = 0
     model.eval()
-    for iter, batch in enumerate(test_dataloader):
+
+    for i in range(opt.epoch_size):
+        batch = get_batch(test_dataset)
 
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
-
-        if iter == nsteps:
-            break
-
-    return total_loss / nsteps
+        if epoch<10:
+            print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+    return total_loss / opt.epoch_size
 
 
 def train(n_epochs):
@@ -130,8 +147,12 @@ def train(n_epochs):
     best_valid_loss = 1e6
     train_loss, valid_loss = [], []
     for i in range(0, n_epochs):
-        train_loss.append(train_epoch(opt.epoch_size))
-        valid_loss.append(test_epoch(opt.epoch_size))
+        train_loss.append(train_epoch(i))
+        try:
+            valid_loss.append(test_epoch(i))
+        except:
+            print('Error when testing epoch')
+            valid_loss.append(1e6)
 
         # If model improved, save it
         if valid_loss[-1] < best_valid_loss:
@@ -180,6 +201,7 @@ if __name__ == '__main__':
         optimizer = optim.Adam(parameters, opt.lrt)
         if opt.baseline_model and 'initialize' in dir(model):
             # If baseline model to preinit is provided, use it
+            print('Initializing with baseline model')
             model.initialize(opt.baseline_model)
 
     model = model.cuda() if utils.is_remote() else model

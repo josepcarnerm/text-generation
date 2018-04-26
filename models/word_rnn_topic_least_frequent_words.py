@@ -33,7 +33,10 @@ class Model(WordRNNModelTopic):
             examples.append({'sentence': sentence, 'topic candidates': words_sorted})
 
         for e in examples:
-            print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+            try:
+                print('Sentence: {}. Topic candidates: {}.'.format(' '.join(e['sentence']), e['topic candidates']))
+            except:
+                print('Exception when printing')
 
     def get_test_topic(self):
         return self.select_topics([['happy']])
@@ -66,7 +69,11 @@ class Model(WordRNNModelTopic):
             output, hidden = self.forward(inp[:, w], hidden)
 
             # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
-            _, words_i = output.max(1)
+            # _, words_i = output.max(1)
+            # Sample from the network as a multinomial distribution
+            output_dist = output.div(0.8).exp()
+            words_i = torch.multinomial(output_dist, 1)
+
             loss_topic_weights = Variable(torch.from_numpy(numpy.array(
                 [1 / self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
             )).unsqueeze(1)).float()
@@ -80,9 +87,12 @@ class Model(WordRNNModelTopic):
                     'closeness to sentence topic': closeness[i].data[0]
                 })
         for e in examples:
-            print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
-                ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
-            ))
+            try:
+                print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
+                    ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
+                ))
+            except:
+                print('Exception when printing')
 
     def select_topics(self, batch):
 

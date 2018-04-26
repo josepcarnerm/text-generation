@@ -36,6 +36,7 @@ class Model(WordRNNModel):
     def initialize(self, baseline_model):
         # baseline_model must be path to "checkpoint" file
         baseline = torch.load(baseline_model).get('model')
+        import pdb; pdb.set_trace()
         self.encoder.load_state_dict(baseline.encoder.state_dict())
         self.rnn.load_state_dict(baseline.rnn.state_dict())
         self.decoder.load_state_dict(baseline.decoder.state_dict())
@@ -104,7 +105,11 @@ class Model(WordRNNModel):
             output, hidden = self.forward(inp[:, w], hidden)
 
             # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
-            _, words_i = output.max(1)
+            # _, words_i = output.max(1)
+            # Sample from the network as a multinomial distribution
+            output_dist = output.div(0.8).exp()
+            words_i = torch.multinomial(output_dist, 1)
+
             loss_topic_weights = Variable(torch.from_numpy(numpy.array(
                 [1 / self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
             )).unsqueeze(1)).float()
@@ -118,9 +123,12 @@ class Model(WordRNNModel):
                     'closeness to sentence topic': closeness[i].data[0]
                 })
         for e in examples:
-            print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
-                ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
-            ))
+            try:
+                print('Sentence: {}. Topic: {}. Predictions, weights and closeness: {}.'.format(
+                    ' '.join(e['sentence']), e['topic'], '\n\t' + '\n\t'.join([str(x) for x in e['preds and dist']])
+                ))
+            except:
+                print('Exception when printing')
 
     def analyze(self, batch):
 
@@ -129,8 +137,8 @@ class Model(WordRNNModel):
 
         # Analyze losses
         print('Analyzing Losses......')
-        print('Average topic loss: {}. Average reconstruction loss: {}'.format(
-            numpy.mean(self.losses_topic)/self.opt.sentence_len, numpy.mean(self.losses_reconstruction)/self.opt.sentence_len
+        print('Last topic loss: {}. Last reconstruction loss: {}'.format(
+            self.losses_topic[-1]/self.opt.sentence_len, self.losses_reconstruction[-1]/self.opt.sentence_len
         ))
 
     def select_topics(self, batch):
@@ -180,6 +188,7 @@ class Model(WordRNNModel):
 
             # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
             _, words_i = output.max(1)
+            last_output = words_i
             loss_topic_weights = Variable(torch.from_numpy(numpy.array(
                 [1/self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
             )).unsqueeze(1)).float()
