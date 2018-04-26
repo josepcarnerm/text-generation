@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
 parser.add_argument('-dataloader', type=str, default='multi_file_str')  # Must be a valid file name in dataloaders/ folder
 parser.add_argument('-model', type=str, default='word_rnn')  # Must be a valid file name in models/ folder
-parser.add_argument('-batch_size', type=int, default=128)
+parser.add_argument('-batch_size', type=int, default=100)
 parser.add_argument('-lrt', type=float, default=0.0001)
 parser.add_argument('-epoch_size', type=int, default=100)
 parser.add_argument('-n_epochs', type=int, default=2000)
@@ -33,7 +33,7 @@ parser.add_argument('-dropout', type=float, default=0.4)
 parser.add_argument('-hidden_size_rnn', type=int, default=200, help='RNN hidden vector size')
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
-parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
+parser.add_argument('-use_pretrained_embeddings', default=True, action='store_true', help='if true, use pretrained glove embeddings')
 parser.add_argument('-bidirectional', action='store_true', help='if true, use bidirectional LSTMs')
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d.txt', help='directory to pretrained glove vectors')
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
@@ -84,7 +84,7 @@ test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=Tr
 def get_batch(dataset):
     batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]
     for b in range(opt.batch_size):
-        item = dataset.__getitem__(random.randint(0,len(dataset)))
+        item = dataset.__getitem__()
         for i in range(opt.sentence_len+1):
             batch[i][b] = item[i]
     return batch
@@ -92,7 +92,7 @@ def get_batch(dataset):
 get_batch(train_dataset)
 get_batch(test_dataset)
 print('Train dataset loaded with {} sentences of {} words each. {} words in total'.format(len(train_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
-print('Test dataset loaded with {} sentences of {} words each. {} words in total'.format(len(test_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
+print('Test dataset loaded with {} sentences of {} words each. {} words in total'.format(len(test_dataset), opt.sentence_len, len(test_dataset)*opt.sentence_len))
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -114,8 +114,8 @@ def train_epoch(epoch):
         # Backward step
         loss_batch.backward()
         optimizer.step()
-        if epoch<10:
-            print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+        # if epoch<10:
+            # print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
@@ -133,8 +133,8 @@ def test_epoch(epoch):
         # Forward step
         loss_batch = model.evaluate(batch)
         total_loss += loss_batch.data[0] / opt.sentence_len
-        if epoch<10:
-            print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+        # if epoch<10:
+        #     print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
     return total_loss / opt.epoch_size
 
 

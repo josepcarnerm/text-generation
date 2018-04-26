@@ -40,7 +40,8 @@ class Model(nn.Module):
 
     def load_word_dicts(self):
         if self.opt.use_pretrained_embeddings:
-            self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict')
+            # self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict')
+            self.word_dict = torch.load(self.opt.input_folder_path + '.sentences.g_word_dict')
             self.opt.hidden_size_rnn = self.word_dict['the'].size(0)
             self.word_dict_dim = self.opt.hidden_size_rnn
             self.word2idx = {word: idx for idx, word in enumerate((self.word_dict.keys()))}
@@ -75,6 +76,7 @@ class Model(nn.Module):
             hidden = (hidden[0].contiguous(), hidden[1].contiguous())
         else:
             hidden = hidden.contiguous()
+        # import pdb; pdb.set_trace()
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
 
         output = self.decoder(output.view(batch_size, -1))

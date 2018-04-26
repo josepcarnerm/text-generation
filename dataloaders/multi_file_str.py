@@ -32,12 +32,19 @@ class MyDataset(Dataset):
         else:
             self.create_word_dict()
             self.create_word_count()
+
         self.len = len(self.sentences)
 
     def preprocess_sentences(self):
+        # sentences_file_train = self.opt.input_folder_path + \
+        #                  ('train.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
+        # sentences_file_test = self.opt.input_folder_path + \
+        #                  ('test.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
+
         sentences_file = self.opt.input_folder_path + \
                          ('.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
 
+        # if not os.path.isfile(sentences_file_train if self.train else sentences_file_test):
         if not os.path.isfile(sentences_file):
             folder_path = self.opt.input_folder_path + "/"
             self.sentences = []
@@ -79,11 +86,12 @@ class MyDataset(Dataset):
 
         else:
             self.sentences_all = torch.load(sentences_file)
-
+        
         if self.train:
             self.sentences = self.sentences_all['train']
         else:
             self.sentences = self.sentences_all['test']
+        random.seed(random.randint(0,len(self.sentences)))
 
 
     def get_words(self):
@@ -111,8 +119,8 @@ class MyDataset(Dataset):
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
 
-    def __getitem__(self, index):
-        random.seed(index)
+    def __getitem__(self):
+        
         return random.sample(self.sentences, 1)[0]
 
     def __len__(self):
