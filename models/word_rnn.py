@@ -40,6 +40,7 @@ class Model(nn.Module):
         self.submodules = [self.encoder, self.rnn, self.decoder, self.criterion]
 
     def load_word_dicts(self):
+        import pdb; pdb.set_trace()
         if self.opt.use_pretrained_embeddings:
             self.word_dict = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict')
             # pkl_file = open(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_dict', 'rb')

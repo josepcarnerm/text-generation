@@ -41,6 +41,7 @@ class MyDataset(Dataset):
                          ('.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
 
         if not os.path.isfile(sentences_file):
+            print('Preprocessing sentences...')
             folder_path = self.opt.input_folder_path + "/"
             self.sentences = []
             for filename in glob.glob(folder_path+'*.txt'):
