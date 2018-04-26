@@ -88,9 +88,9 @@ class MyDataset(Dataset):
         else:
             print('Loading preprocessed sentences...')
             self.sentences_all = torch.load(sentences_file)
-            pkl_file = open(sentences_file, 'rb')
-            self.sentences_all = pickle.load(pkl_file)
-            pkl_file.close()
+            # pkl_file = open(sentences_file, 'rb')
+            # self.sentences_all = pickle.load(pkl_file)
+            # pkl_file.close()
 
         if self.train:
             self.sentences = self.sentences_all['train']
