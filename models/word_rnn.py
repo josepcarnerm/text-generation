@@ -18,10 +18,10 @@ class Model(nn.Module):
         self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
         if self.opt.bidirectional:
             self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn,
-                               batch_first=False, bidirectional=True, dropout=self.opt.dropout)
+                               batch_first=False, bidirectional=True)
             self.decoder = nn.Linear(self.opt.hidden_size_rnn*2, self.N_WORDS)
         else:
-            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn, dropout=self.opt.dropout)
+            self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn)
             self.decoder = nn.Linear(self.opt.hidden_size_rnn, self.N_WORDS)
 
 
