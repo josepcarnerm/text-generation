@@ -79,18 +79,11 @@ class MyDataset(Dataset):
             self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
             torch.save(self.sentences_all, sentences_file)
 
-            # output = open(sentences_file, 'wb')
-            # pickle.dump(self.sentences_all, output)
-            # output.close()
-
             self.topic_len = len(self.sentences)
 
         else:
             print('Loading preprocessed sentences...')
             self.sentences_all = torch.load(sentences_file)
-            # pkl_file = open(sentences_file, 'rb')
-            # self.sentences_all = pickle.load(pkl_file)
-            # pkl_file.close()
 
         if self.train:
             self.sentences = self.sentences_all['train']
@@ -108,36 +101,20 @@ class MyDataset(Dataset):
         word_dict = {w: i for i, w in enumerate(set(self.words))}
         torch.save(word_dict, word_dict_file)
 
-        # output = open(word_dict_file, 'wb')
-        # pickle.dump(word_dict, output)
-        # output.close()
-
     def create_word_count(self):
         word_count_file = self.opt.data_dir + self.opt.input_folder_path + '.sentences.word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
-
-        # output = open(word_count_file, 'wb')
-        # pickle.dump(word_count, output)
-        # output.close()
 
     def create_word_dict_glove(self):
         word_dict_file = self.opt.data_dir + self.opt.input_folder_path + '.sentences.g_word_dict'
         word_dict = {w: self.glv_dict.get(w) for w in set(self.words)}
         torch.save(word_dict, word_dict_file)
 
-        # output = open(word_dict_file, 'wb')
-        # pickle.dump(word_dict, output)
-        # output.close()
-
     def create_word_count_glove(self):
         word_count_file = self.opt.data_dir +  self.opt.input_folder_path + '.sentences.g_word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
-
-        # output = open(word_count_file, 'wb')
-        # pickle.dump(word_count, output)
-        # output.close()
 
     def __getitem__(self, index):
         random.seed(index)
