@@ -205,6 +205,7 @@ if __name__ == '__main__':
             model.initialize(opt.baseline_model)
 
     model = model.cuda() if utils.is_remote() else model
+    import pdb; pdb.set_trace()
 
     print('training...')
     utils.log(opt.save_dir + 'logs.txt', '[training]')
