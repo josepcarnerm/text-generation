@@ -6,7 +6,7 @@ jobs = [
 
     {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 128, 'lrt': 0.0001,
      'epoch_size': 1, 'n_epochs': 2000, 'hidden_size_rnn': 200, 'n_layers_rnn': 2, 'sentence_len': 20,
-     'use_pretrained_embeddings': '', 'dropout': 0.4, 'bidirectional': ''},
+     'dropout': 0.4},
 
     # TOPIC AGNOSTIC MODELS -------------------------------------------------------------------------------
     # {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 128, 'lrt': 0.0001,
