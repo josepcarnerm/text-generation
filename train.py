@@ -53,6 +53,11 @@ parser.add_argument('-input_folder_path', type=str, default='data_gutenberg', he
 
 opt = parser.parse_args()
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
+if opt.dataloader == 'multi_file_str':
+    opt.input_file = opt.input_folder_path
+elif opt.dataloader == 'single_file_str_sentences':
+    opt.input_folder_path = opt.input_file
+
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -78,8 +83,8 @@ mod = __import__('dataloaders.{}'.format(opt.dataloader), fromlist=['MyDataset']
 datasetClass = getattr(mod, 'MyDataset')
 train_dataset = datasetClass(opt, train=True)
 test_dataset = datasetClass(opt, train=False)
-train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
-test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+# train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
+# test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
 
 def get_batch(dataset):
     batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]

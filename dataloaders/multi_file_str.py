@@ -1,6 +1,6 @@
 
 import numpy
-import torch, nltk, random, os, re, glob, pdb
+import torch, nltk, random, os, re, glob, pdb, pickle
 from nltk.tokenize import sent_tokenize, word_tokenize
 from torch.autograd import Variable
 from torch.utils.data import Dataset
@@ -34,11 +34,14 @@ class MyDataset(Dataset):
             self.create_word_count()
         self.len = len(self.sentences)
 
+        del self.sentences_all
+
     def preprocess_sentences(self):
-        sentences_file = self.opt.input_folder_path + \
+        sentences_file = self.opt.data_dir + self.opt.input_folder_path + \
                          ('.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
 
         if not os.path.isfile(sentences_file):
+            print('Preprocessing sentences...')
             folder_path = self.opt.input_folder_path + "/"
             self.sentences = []
             for filename in glob.glob(folder_path+'*.txt'):
@@ -75,9 +78,11 @@ class MyDataset(Dataset):
             n_train = int(len(self.sentences)*0.75)
             self.sentences_all = {'train': self.sentences[:n_train], 'test': self.sentences[n_train:]}
             torch.save(self.sentences_all, sentences_file)
+
             self.topic_len = len(self.sentences)
 
         else:
+            print('Loading preprocessed sentences...')
             self.sentences_all = torch.load(sentences_file)
 
         if self.train:
@@ -92,22 +97,22 @@ class MyDataset(Dataset):
             self.words += list(sentence)
 
     def create_word_dict(self):
-        word_dict_file = self.opt.input_folder_path + '.sentences.word_dict'
+        word_dict_file = self.opt.data_dir + self.opt.input_folder_path + '.sentences.word_dict'
         word_dict = {w: i for i, w in enumerate(set(self.words))}
         torch.save(word_dict, word_dict_file)
 
     def create_word_count(self):
-        word_count_file = self.opt.input_folder_path + '.sentences.word_count'
+        word_count_file = self.opt.data_dir + self.opt.input_folder_path + '.sentences.word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
 
     def create_word_dict_glove(self):
-        word_dict_file = self.opt.input_folder_path + '.sentences.g_word_dict'
+        word_dict_file = self.opt.data_dir + self.opt.input_folder_path + '.sentences.g_word_dict'
         word_dict = {w: self.glv_dict.get(w) for w in set(self.words)}
         torch.save(word_dict, word_dict_file)
 
     def create_word_count_glove(self):
-        word_count_file = self.opt.input_folder_path + '.sentences.g_word_count'
+        word_count_file = self.opt.data_dir +  self.opt.input_folder_path + '.sentences.g_word_count'
         word_count = Counter(self.words)
         torch.save(word_count, word_count_file)
 

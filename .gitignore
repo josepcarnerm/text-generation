@@ -11,3 +11,9 @@ txtgen/
 text-generation.iml
  .idea/workspace.xml
 data/
+*.sentences.g_word_count
+*.sentences.g_word_dict
+*.sentences.g_preprocess
+*.sentences.word_count
+*.sentences.word_dict
+*.sentences.preprocess
