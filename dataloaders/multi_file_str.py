@@ -34,6 +34,8 @@ class MyDataset(Dataset):
             self.create_word_count()
         self.len = len(self.sentences)
 
+        del self.sentences_all
+
     def preprocess_sentences(self):
         sentences_file = self.opt.input_folder_path + \
                          ('.sentences.preprocess' if not self.opt.use_pretrained_embeddings else '.sentences.g_preprocess')
