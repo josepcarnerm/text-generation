@@ -4,7 +4,10 @@ from config import RESULTS_DIR_LOCAL, RESULTS_DIR_REMOTE
 
 jobs = [
 
-    {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.0001,
+    # {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.0001,
+    #  'epoch_size': 100, 'n_epochs': 2000, 'hidden_size_rnn': 200, 'n_layers_rnn': 2, 'sentence_len': 20,
+    #  'use_pretrained_embeddings': '', 'bidirectional': ''},
+    {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.001,
      'epoch_size': 100, 'n_epochs': 2000, 'hidden_size_rnn': 200, 'n_layers_rnn': 2, 'sentence_len': 20,
      'use_pretrained_embeddings': '', 'bidirectional': ''},
 
@@ -20,10 +23,10 @@ jobs = [
     #  'use_pretrained_embeddings': '', 'dropout': 0.4, 'bidirectional': ''},
     # {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.0001,
     #  'epoch_size': 100, 'n_epochs': 2000, 'hidden_size_rnn': 100, 'n_layers_rnn': 2, 'sentence_len': 20,
-    #  'use_pretrained_embeddings': '', 'dropout': 0.4, 'bidirectional': ''},
+    #  'use_pretrained_embeddings': '', 'dropout': 0.4, 'bidirectional': '', 'glove_dir':'data/glove.6B/glove.6B.100d.txt'},
     # {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.0001,
     #  'epoch_size': 100, 'n_epochs': 2000, 'hidden_size_rnn': 300, 'n_layers_rnn': 2, 'sentence_len': 20,
-    #  'use_pretrained_embeddings': '', 'dropout': 0.4, 'bidirectional': ''},
+    #  'use_pretrained_embeddings': '', 'dropout': 0.4, 'bidirectional': '', 'glove_dir':'data/glove.6B/glove.6B.100d.txt'},
     # {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.0001,
     #  'epoch_size': 100, 'n_epochs': 2000, 'hidden_size_rnn': 200, 'n_layers_rnn': 2, 'sentence_len': 20,
     #  'dropout': 0.4, 'bidirectional': ''},
