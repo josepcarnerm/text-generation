@@ -173,7 +173,7 @@ class Model(WordRNNModel):
                              .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
 
         hidden = topic_enc, topic_enc.clone()
-        # hidden = self.init_hidden(self.opt.batch_size)
+        hidden = self.init_hidden(self.opt.batch_size)
 
         # Encode/Decode sentence
         loss_topic_total_weight = 0
