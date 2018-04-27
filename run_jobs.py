@@ -9,7 +9,7 @@ jobs = [
     #  'use_pretrained_embeddings': '', 'bidirectional': ''},
     {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.001,
      'epoch_size': 100, 'n_epochs': 2000, 'hidden_size_rnn': 200, 'n_layers_rnn': 2, 'sentence_len': 20,
-     'use_pretrained_embeddings': '', 'bidirectional': ''},
+     'use_pretrained_embeddings': '', 'bidirectional': '', 'dropout': 0},
 
     # TOPIC AGNOSTIC MODELS -------------------------------------------------------------------------------
     # {'dataloader': 'multi_file_str', 'model': 'word_rnn', 'batch_size': 256, 'lrt': 0.0001,
