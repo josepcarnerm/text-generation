@@ -164,15 +164,15 @@ class Model(WordRNNModel):
         topics, topics_words = self.select_topics(batch)
         inp, target = self.get_input_and_target(batch)
 
-        # Topic is provided as an initialization to the hidden state
-        if self.opt.bidirectional:
-            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
-                .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
-        else:
-            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
-                             .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        # # Topic is provided as an initialization to the hidden state
+        # if self.opt.bidirectional:
+        #     topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
+        #         .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        # else:
+        #     topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
+        #                      .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
 
-        hidden = topic_enc, topic_enc.clone()
+        # hidden = topic_enc, topic_enc.clone()
         hidden = self.init_hidden(self.opt.batch_size)
 
         # Encode/Decode sentence
