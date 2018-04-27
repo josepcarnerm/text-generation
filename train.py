@@ -89,7 +89,7 @@ test_dataset = datasetClass(opt, train=False)
 def get_batch(dataset):
     batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]
     for b in range(opt.batch_size):
-        item = dataset.__getitem__(random.randint(0,len(dataset)))
+        item = dataset.__getitem__(random.randint(0, len(dataset)))
         for i in range(opt.sentence_len+1):
             batch[i][b] = item[i]
     return batch

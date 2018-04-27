@@ -117,7 +117,7 @@ class MyDataset(Dataset):
         torch.save(word_count, word_count_file)
 
     def __getitem__(self, index):
-        random.seed(index)
+        # random.seed(index)
         return random.sample(self.sentences, 1)[0]
 
     def __len__(self):
