@@ -41,12 +41,6 @@ class Model(WordRNNModel):
         self.decoder.load_state_dict(baseline.decoder.state_dict())
         self.encoder_topic.load_state_dict(baseline.encoder.state_dict())  # Initialize encoder_topic with encoder
 
-        import pdb; pdb.set_trace()
-        # self.encoder.weight = nn.Parameter(baseline.encoder)
-        # self.rnn.weight = nn.Parameter(baseline.rnn)
-        # self.decoder.weight = nn.Parameter(baseline.decoder)
-        # self.encoder_topic.seight = nn.Parameter(baseline.encoder)  # Initialize encoder_topic with encoder
-
     def load_word_counts(self):
         if self.opt.use_pretrained_embeddings:
             self.word_count = torch.load(self.opt.data_dir + self.opt.input_file + '.sentences.g_word_count')
@@ -179,6 +173,7 @@ class Model(WordRNNModel):
                              .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
 
         hidden = topic_enc, topic_enc.clone()
+        hidden = self.init_hidden(self.opt.batch_size)
 
         # Encode/Decode sentence
         loss_topic_total_weight = 0
