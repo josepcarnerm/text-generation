@@ -171,7 +171,7 @@ class Model(WordRNNModel):
 
         for w in range(self.opt.sentence_len):
             x = last_output if self.opt.reuse_pred else inp[:, w]
-            output, hidden = self.forward(x, hidden)
+            output, hidden = self.baseline.forward(x, hidden)
             last_output = self.select_word_index_from_output(output)
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
