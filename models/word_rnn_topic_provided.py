@@ -164,47 +164,58 @@ class Model(WordRNNModel):
 
     def evaluate(self, batch):
 
-        loss_reconstruction = 0
-        loss_topic = 0
-
-        self.copy_weights_encoder()
-        topics, topics_words = self.select_topics(batch)
         inp, target = self.get_input_and_target(batch)
-
-        # Topic is provided as an initialization to the hidden state
-        if self.opt.bidirectional:
-            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
-                .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
-        else:
-            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
-                             .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
-
-        hidden = topic_enc, topic_enc.clone()
         hidden = self.init_hidden(self.opt.batch_size)
-
-        # Encode/Decode sentence
-        loss_topic_total_weight = 0
+        loss = 0
         last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-        for w in range(self.opt.sentence_len):
 
+        for w in range(self.opt.sentence_len):
             x = last_output if self.opt.reuse_pred else inp[:, w]
             output, hidden = self.forward(x, hidden)
+            last_output = self.select_word_index_from_output(output)
+            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
-            # Reconstruction Loss
-            loss_reconstruction += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-            # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
-            _, words_i = output.max(1)
-            last_output = words_i
-            loss_topic_weights = Variable(torch.from_numpy(numpy.array(
-                [1/self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
-            )).unsqueeze(1)).float()
-            loss_topic_weights = loss_topic_weights.cuda() if is_remote() else loss_topic_weights
-            loss_topic_total_weight += loss_topic_weights
-            loss_topic += self.closeness_to_topics(output, topics) * loss_topic_weights
-
-        self.losses_reconstruction.append(loss_reconstruction.data[0])
-        self.losses_topic.append(loss_topic.data[0])
+        # loss_reconstruction = 0
+        # loss_topic = 0
+        #
+        # self.copy_weights_encoder()
+        # topics, topics_words = self.select_topics(batch)
+        # inp, target = self.get_input_and_target(batch)
+        #
+        # # Topic is provided as an initialization to the hidden state
+        # if self.opt.bidirectional:
+        #     topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
+        #         .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        # else:
+        #     topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
+        #                      .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+        #
+        # hidden = topic_enc, topic_enc.clone()
+        # hidden = self.init_hidden(self.opt.batch_size)
+        #
+        # # Encode/Decode sentence
+        # loss_topic_total_weight = 0
+        # last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+        # for w in range(self.opt.sentence_len):
+        #
+        #     x = last_output if self.opt.reuse_pred else inp[:, w]
+        #     output, hidden = self.forward(x, hidden)
+        #
+        #     # Reconstruction Loss
+        #     loss_reconstruction += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+        #
+        #     # Topic closeness loss: Weight each word contribution by the inverse of it's frequency
+        #     _, words_i = output.max(1)
+        #     last_output = words_i
+        #     loss_topic_weights = Variable(torch.from_numpy(numpy.array(
+        #         [1/self.word_count[self.inverted_word_dict[i.data[0]]] for i in words_i]
+        #     )).unsqueeze(1)).float()
+        #     loss_topic_weights = loss_topic_weights.cuda() if is_remote() else loss_topic_weights
+        #     loss_topic_total_weight += loss_topic_weights
+        #     loss_topic += self.closeness_to_topics(output, topics) * loss_topic_weights
+        #
+        # self.losses_reconstruction.append(loss_reconstruction.data[0])
+        # self.losses_topic.append(loss_topic.data[0])
 
         import pdb; pdb.set_trace()
 
