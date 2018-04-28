@@ -202,7 +202,8 @@ class Model(WordRNNModel):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        import pdb; pdb.set_trace()
+        print('Baseline error: {}. This error: {}'.format(
+            self.baseline.evaluate(batch).data[0] / self.opt.sentence_len, loss_reconstruction.data[0] / self.opt.sentence_len))
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
     def get_test_topic(self):
