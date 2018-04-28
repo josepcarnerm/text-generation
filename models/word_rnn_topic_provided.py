@@ -278,7 +278,7 @@ class Model(WordRNNModel):
 
         print((
             self.ev1(batch), self.ev2(batch), self.ev3(batch), self.ev4(batch), self.ev5(batch), self.ev6(batch),
-            self.ev7(batch)
+            self.ev7(batch), self.ev8(batch)
         ))
 
         # loss_reconstruction = 0
