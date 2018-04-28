@@ -113,7 +113,7 @@ def train_epoch(epoch):
         model.zero_grad()
 
         # Forward step
-        if 'topic' in model:
+        if 'topic' in opt.model:
             loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
             if epoch<10:
