@@ -110,14 +110,11 @@ class Model(WordRNNModelTopic):
             words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word) and word in self.word2idx])
             if len(words_sorted) < self.opt.n_layers_rnn:
                 n_more = self.opt.n_layers_rnn - len(words_sorted)
-                for i in range(n_more):
+                for _ in range(n_more):
                     words_sorted.append(words_sorted[0])
             for j in range(self.opt.n_layers_rnn):
                 print(j)
-                try:
-                    topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
-                except:
-                    import pdb; pdb.set_trace()
+                topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
             topics_words.append(tuple([w[1] for w in words_sorted[:self.opt.n_layers_rnn]]))
 
         if self.opt.bidirectional:
