@@ -202,9 +202,7 @@ class Model(WordRNNModel):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        import pdb;
-        pdb.set_trace()
-        ratio = loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0]
+        ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic*ratio
 
     def get_test_topic(self):
