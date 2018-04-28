@@ -167,7 +167,7 @@ def test_epoch(epoch):
                 ))
                 warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
                 test_sample = model.test(warmup, opt.sentence_len)
-                import pdb; pdb.set_trace()
+
                 try:
                     print(test_sample)
                 except:
