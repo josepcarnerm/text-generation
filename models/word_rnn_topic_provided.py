@@ -157,124 +157,7 @@ class Model(WordRNNModel):
         if not self.opt.use_pretrained_embeddings:
             self.encoder_topic.load_state_dict(self.encoder.state_dict())
 
-    def ev1(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
-            last_output = self.baseline.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev2(self, batch):
-        inp, target = self.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
-            last_output = self.baseline.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev3(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
-            last_output = self.baseline.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev4(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
-            last_output = self.baseline.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev5(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.forward(x, hidden)
-            last_output = self.baseline.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev6(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
-            last_output = self.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev7(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
-            last_output = self.baseline.select_word_index_from_output(output)
-            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
-    def ev8(self, batch):
-        inp, target = self.baseline.get_input_and_target(batch)
-        hidden = self.init_hidden(self.opt.batch_size)
-        loss = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-
-        for w in range(self.opt.sentence_len):
-            x = last_output if self.opt.reuse_pred else inp[:, w]
-            output, hidden = self.forward(x, hidden)
-            last_output = self.select_word_index_from_output(output)
-            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
-
-        return loss
-
     def evaluate(self, batch):
-
-        print((
-            self.ev1(batch), self.ev2(batch), self.ev3(batch), self.ev4(batch), self.ev5(batch), self.ev6(batch),
-            self.ev7(batch), self.ev8(batch)
-        ))
 
         loss_reconstruction = 0
         loss_topic = 0
@@ -292,7 +175,6 @@ class Model(WordRNNModel):
                              .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
 
         hidden = topic_enc, topic_enc.clone()
-        hidden = self.init_hidden(self.opt.batch_size)
 
         # Encode/Decode sentence
         loss_topic_total_weight = 0
@@ -318,9 +200,9 @@ class Model(WordRNNModel):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
+        ratio = float(loss_reconstruction.detach().data[0] / loss_topic.detach().data[0])
         import pdb; pdb.set_trace()
-
-        return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
+        return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic*ratio
 
     def get_test_topic(self):
         return self.select_topics((['love'], [['love']]))
