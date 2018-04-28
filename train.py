@@ -173,14 +173,13 @@ def test_epoch(epoch):
                 except:
                     print('Unicode error')
 
-
         else:
             loss_batch = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
             if epoch < 10:
                 print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
-        return total_loss / opt.epoch_size, total_loss_reconstruction / opt.epoch_size, total_loss_topic / opt.epoch_size
+    return total_loss / opt.epoch_size, total_loss_reconstruction / opt.epoch_size, total_loss_topic / opt.epoch_size
 
 
 def train(n_epochs):
