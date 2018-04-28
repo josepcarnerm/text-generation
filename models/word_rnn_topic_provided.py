@@ -156,6 +156,12 @@ class Model(WordRNNModel):
         if not self.opt.use_pretrained_embeddings:
             self.encoder_topic.load_state_dict(self.encoder.state_dict())
 
+    def same(self, model1, model2):
+        for p1, p2 in zip(model1.parameters(), model2.parameters()):
+            if p1.data.ne(p2.data).sum() > 0:
+                return False
+        return True
+
     def evaluate(self, batch):
 
         loss_reconstruction = 0
@@ -202,8 +208,8 @@ class Model(WordRNNModel):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        print('Baseline error: {}. This error: {}'.format(
-            self.baseline.evaluate(batch).data[0] / self.opt.sentence_len, loss_reconstruction.data[0] / self.opt.sentence_len))
+        import pdb; pdb.set_trace()
+
         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
     def get_test_topic(self):
