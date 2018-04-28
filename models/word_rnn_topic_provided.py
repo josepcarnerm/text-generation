@@ -170,10 +170,10 @@ class Model(WordRNNModel):
         last_output = inp[:, 0]  # Only used if "reuse_pred" is set
 
         for w in range(self.opt.sentence_len):
-            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
+            x = last_output if self.opt.reuse_pred else inp[:, w]
+            output, hidden = self.forward(x, hidden)
             last_output = self.select_word_index_from_output(output)
-            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+            loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
         # loss_reconstruction = 0
         # loss_topic = 0
