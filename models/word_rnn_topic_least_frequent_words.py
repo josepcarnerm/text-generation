@@ -114,8 +114,10 @@ class Model(WordRNNModelTopic):
                     words_sorted.append(words_sorted[0])
             for j in range(self.opt.n_layers_rnn):
                 print(j)
-                topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
-                import pdb; pdb.set_trace()
+                try:
+                    topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
+                except:
+                    import pdb; pdb.set_trace()
             topics_words.append(tuple([w[1] for w in words_sorted[:self.opt.n_layers_rnn]]))
 
         if self.opt.bidirectional:
