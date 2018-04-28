@@ -83,8 +83,6 @@ mod = __import__('dataloaders.{}'.format(opt.dataloader), fromlist=['MyDataset']
 datasetClass = getattr(mod, 'MyDataset')
 train_dataset = datasetClass(opt, train=True)
 test_dataset = datasetClass(opt, train=False)
-# train_dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
-# test_dataloader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=True, drop_last=True, pin_memory= utils.is_remote())
 
 def get_batch(dataset):
     batch = [['' for _ in range(opt.batch_size)] for _ in range(opt.sentence_len+1)]
@@ -104,6 +102,8 @@ print('Test dataset loaded with {} sentences of {} words each. {} words in total
 # TRAIN --------------------------------------------------------------------------------------------------------
 def train_epoch(epoch):
     total_loss = 0
+    total_loss_reconstruction = 0
+    total_loss_topic = 0
     model.train()
 
     for i in range(opt.epoch_size):
@@ -116,6 +116,8 @@ def train_epoch(epoch):
         if 'topic' in opt.model:
             loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
+            total_loss_reconstruction += loss_reconstruction.data[0] / opt.sentence_len
+            total_loss_topic += loss_topic.data[0] / opt.sentence_len
             if epoch<10:
                 print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
                     utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
@@ -130,7 +132,7 @@ def train_epoch(epoch):
         else:
             loss_batch = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
-            if epoch<10:
+            if epoch < 10:
                 print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
         # Backward step
@@ -140,11 +142,13 @@ def train_epoch(epoch):
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
 
-    return total_loss / opt.epoch_size
+    return total_loss / opt.epoch_size, total_loss_reconstruction / opt.epoch_size, total_loss_topic / opt.epoch_size
 
 
 def test_epoch(epoch):
     total_loss = 0
+    total_loss_reconstruction = 0
+    total_loss_topic = 0
     model.eval()
 
     for i in range(opt.epoch_size):
@@ -154,6 +158,8 @@ def test_epoch(epoch):
         if 'topic' in opt.model:
             loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
+            total_loss_reconstruction += loss_reconstruction.data[0] / opt.sentence_len
+            total_loss_topic += loss_topic.data[0] / opt.sentence_len
             if epoch < 10:
                 print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
                     utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
@@ -172,7 +178,7 @@ def test_epoch(epoch):
             if epoch < 10:
                 print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
-    return total_loss / opt.epoch_size
+        return total_loss / opt.epoch_size, total_loss_reconstruction / opt.epoch_size, total_loss_topic / opt.epoch_size
 
 
 def train(n_epochs):
@@ -182,28 +188,41 @@ def train(n_epochs):
 
     # training
     best_valid_loss = 1e6
-    train_loss, valid_loss = [], []
+    train_losses, valid_losses = [], []
+    valid_loss_reconstruction, valid_loss_topic = -1, -1
     for i in range(0, n_epochs):
-        train_loss.append(train_epoch(i))
+        train_loss, train_loss_reconstruction, train_loss_topic = train_epoch(i)
+        train_losses.append(train_loss)
         try:
-            valid_loss.append(test_epoch(i))
+            valid_loss, valid_loss_reconstruction, valid_loss_topic = test_epoch(i)
+            valid_losses.append(valid_loss)
         except:
             print('Error when testing epoch')
-            valid_loss.append(1e6)
+            valid_losses.append(1e6)
 
         # If model improved, save it
-        if valid_loss[-1] < best_valid_loss:
-            best_valid_loss = valid_loss[-1]
+        if valid_losses[-1] < best_valid_loss:
+            best_valid_loss = valid_losses[-1]
             # save
             utils.move(gpu=False, tensor_list=model.submodules)
-            torch.save({'epoch': i, 'model': model, 'train_loss': train_loss, 'valid_loss': valid_loss,
+            torch.save({'epoch': i, 'model': model, 'train_loss': train_losses, 'valid_loss': valid_losses,
                         'optimizer': optimizer, 'opt': opt},
                        opt.save_dir + 'checkpoint')
             utils.move(gpu=utils.is_remote(), tensor_list=model.submodules)
 
         # Print log string
-        log_string = ('iter: {:d}, train_loss: {:0.6f}, valid_loss: {:0.6f}, best_valid_loss: {:0.6f}, lr: {:0.5f}').format(
-                      (i+1)*opt.epoch_size, train_loss[-1], valid_loss[-1], best_valid_loss, opt.lrt)
+        if 'topic' in opt.model:
+            log_string = (
+                'iter: {:d}, train_loss: {:0.6f}, valid_loss: {:0.6f}, best_valid_loss: {:0.6f}, lr: {:0.5f}, '
+                'train_loss_reconstruction: {:0.6f}, train_loss_topic: {:0.6f}, '
+                'valid_loss_reconstruction: {:0.6f}, valid_loss_topic: {:0.6f}'
+            ).format(
+                (i + 1) * opt.epoch_size, train_losses[-1], valid_losses[-1], best_valid_loss, opt.lrt,
+                train_loss_reconstruction, train_loss_topic, valid_loss_reconstruction, valid_loss_topic
+            )
+        else:
+            log_string = ('iter: {:d}, train_loss: {:0.6f}, valid_loss: {:0.6f}, best_valid_loss: {:0.6f}, lr: {:0.5f}').format(
+                          (i+1)*opt.epoch_size, train_losses[-1], valid_losses[-1], best_valid_loss, opt.lrt)
         print(log_string)
         utils.log(opt.save_dir + 'logs.txt', log_string, utils.time_since(start))
 
