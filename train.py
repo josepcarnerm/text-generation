@@ -161,7 +161,7 @@ def test_epoch(epoch):
             total_loss_reconstruction += loss_reconstruction.data[0] / opt.sentence_len
             total_loss_topic += loss_topic.data[0] / opt.sentence_len
             if epoch < 10:
-                print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
+                print('[Test] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
                     utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
                     loss_reconstruction.data[0] / opt.sentence_len, loss_topic.data[0] / opt.sentence_len
                 ))
@@ -171,12 +171,13 @@ def test_epoch(epoch):
                     print(test_sample)
                 except:
                     print('Unicode error')
+            import pdb; pdb.set_trace()
 
         else:
             loss_batch = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
             if epoch < 10:
-                print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+                print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
         return total_loss / opt.epoch_size, total_loss_reconstruction / opt.epoch_size, total_loss_topic / opt.epoch_size
 
