@@ -192,7 +192,8 @@ class Model(WordRNNModelTopic):
         self.losses_topic.append(loss_topic.data[0])
 
         ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
-        return self.opt.loss_alpha * loss_reconstruction + (1 - self.opt.loss_alpha) * loss_topic * ratio
+        loss = self.opt.loss_alpha * loss_reconstruction + (1 - self.opt.loss_alpha) * loss_topic * ratio
+        return loss, loss_reconstruction, loss_topic
 
     def test(self, prime_words, predict_len, temperature=0.8):
 

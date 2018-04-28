@@ -113,14 +113,29 @@ def train_epoch(epoch):
         model.zero_grad()
 
         # Forward step
-        loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0] / opt.sentence_len
+        if 'topic' in model:
+            loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
+            total_loss += loss_batch.data[0] / opt.sentence_len
+            if epoch<10:
+                print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
+                    utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
+                    loss_reconstruction/ opt.sentence_len, loss_topic/opt.sentence_len
+                ))
+                warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
+                test_sample = model.test(warmup, opt.sentence_len)
+                try:
+                    print(test_sample)
+                except:
+                    print('Unicode error')
+        else:
+            loss_batch = model.evaluate(batch)
+            total_loss += loss_batch.data[0] / opt.sentence_len
+            if epoch<10:
+                print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
         # Backward step
         loss_batch.backward()
         optimizer.step()
-        if epoch<10:
-            print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
 
     if 'analyze' in dir(model):
         model.analyze([sentence[:5] for sentence in get_batch(train_dataset)])
@@ -136,10 +151,27 @@ def test_epoch(epoch):
         batch = get_batch(test_dataset)
 
         # Forward step
-        loss_batch = model.evaluate(batch)
-        total_loss += loss_batch.data[0] / opt.sentence_len
-        if epoch<10:
-            print('[Test] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+        if 'topic' in model:
+            loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
+            total_loss += loss_batch.data[0] / opt.sentence_len
+            if epoch < 10:
+                print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
+                    utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
+                    loss_reconstruction / opt.sentence_len, loss_topic / opt.sentence_len
+                ))
+                warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
+                test_sample = model.test(warmup, opt.sentence_len)
+                try:
+                    print(test_sample)
+                except:
+                    print('Unicode error')
+
+        else:
+            loss_batch = model.evaluate(batch)
+            total_loss += loss_batch.data[0] / opt.sentence_len
+            if epoch < 10:
+                print('[Train] time:{}, iter:{}, loss:{}'.format(utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len))
+
     return total_loss / opt.epoch_size
 
 
