@@ -112,6 +112,7 @@ class Model(WordRNNModelTopic):
                 n_more = self.opt.n_layers_rnn - len(words_sorted)
                 for i in range(n_more):
                     words_sorted.append(words_sorted[0])
+            import pdb; pdb.set_trace()
             for j in range(self.opt.n_layers_rnn):
                 topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
             topics_words.append(tuple([w[1] for w in words_sorted[:self.opt.n_layers_rnn]]))
