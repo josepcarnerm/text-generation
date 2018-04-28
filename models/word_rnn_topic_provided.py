@@ -171,7 +171,8 @@ class Model(WordRNNModel):
 
         for w in range(self.opt.sentence_len):
             x = last_output if self.opt.reuse_pred else inp[:, w]
-            output, hidden = self.forward(x, hidden)
+            output, hidden = self.baseline.forward(x, hidden)
+            # output, hidden = self.forward(x, hidden)
             last_output = self.select_word_index_from_output(output)
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
@@ -219,7 +220,9 @@ class Model(WordRNNModel):
 
         import pdb; pdb.set_trace()
 
-        return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
+        return loss
+
+        # return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
 
     def get_test_topic(self):
         return self.select_topics((['love'], [['love']]))
