@@ -38,6 +38,7 @@ class Model(WordRNNModel):
         baseline = torch.load(baseline_model).get('model')
         self.baseline = baseline
         self.word2idx = baseline.word2idx
+        self.inverted_word_dict = baseline.inverted_word_dict
         self.encoder.load_state_dict(baseline.encoder.state_dict())
         self.rnn.load_state_dict(baseline.rnn.state_dict())
         self.decoder.load_state_dict(baseline.decoder.state_dict())
@@ -211,8 +212,8 @@ class Model(WordRNNModel):
 
     def test_word_rnn(self, prime_words, predict_len, temperature=0.8):
 
-        hidden = self.baseline.init_hidden(1)
-        prime_input = Variable(self.baseline.from_string_to_tensor(prime_words).unsqueeze(0))
+        hidden = self.init_hidden(1)
+        prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
 
         if is_remote():
             prime_input = prime_input.cuda()
@@ -220,21 +221,21 @@ class Model(WordRNNModel):
 
         # Use priming string to "build up" hidden state
         for p in range(len(prime_words) - 1):
-            _, hidden = self.baseline.forward(prime_input[:, p], hidden)
+            _, hidden = self.forward(prime_input[:, p], hidden)
 
         inp = prime_input[:, -1]
 
         for p in range(predict_len):
-            output, hidden = self.baseline.forward(inp, hidden)
+            output, hidden = self.forward(inp, hidden)
 
             # Sample from the network as a multinomial distribution
             output_dist = output.data.view(-1).div(temperature).exp()
             top_i = torch.multinomial(output_dist, 1)[0]
 
             # Add predicted character to string and use as next input
-            predicted_word = self.baseline.from_predicted_index_to_string(top_i)
+            predicted_word = self.from_predicted_index_to_string(top_i)
             predicted += ' '+predicted_word
-            inp = Variable(self.baseline.from_string_to_tensor([predicted_word]).unsqueeze(0))
+            inp = Variable(self.from_string_to_tensor([predicted_word]).unsqueeze(0))
             if is_remote():
                 inp = inp.cuda()
 
