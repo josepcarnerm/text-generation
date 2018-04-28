@@ -164,8 +164,8 @@ class Model(WordRNNModel):
 
     def evaluate(self, batch):
 
-        inp, target = self.get_input_and_target(batch)
-        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        inp, target = self.baseline.get_input_and_target(batch)
+        hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
         last_output = inp[:, 0]  # Only used if "reuse_pred" is set
 
