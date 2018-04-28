@@ -151,7 +151,7 @@ def test_epoch(epoch):
         batch = get_batch(test_dataset)
 
         # Forward step
-        if 'topic' in model:
+        if 'topic' in opt.model:
             loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
             if epoch < 10:
