@@ -119,7 +119,7 @@ def train_epoch(epoch):
             if epoch<10:
                 print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
                     utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
-                    loss_reconstruction/ opt.sentence_len, loss_topic/opt.sentence_len
+                    loss_reconstruction.data[0] / opt.sentence_len, loss_topic.data[0] /opt.sentence_len
                 ))
                 warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
                 test_sample = model.test(warmup, opt.sentence_len)
@@ -157,7 +157,7 @@ def test_epoch(epoch):
             if epoch < 10:
                 print('[Train] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
                     utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
-                    loss_reconstruction / opt.sentence_len, loss_topic / opt.sentence_len
+                    loss_reconstruction.data[0] / opt.sentence_len, loss_topic.data[0] / opt.sentence_len
                 ))
                 warmup = 'Wh' if opt.model == 'char_rnn' else ['what']
                 test_sample = model.test(warmup, opt.sentence_len)
