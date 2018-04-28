@@ -164,14 +164,14 @@ class Model(WordRNNModel):
 
     def evaluate(self, batch):
 
-        inp, target = self.baseline.get_input_and_target(batch)
+        inp, target = self.get_input_and_target(batch)
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
         last_output = inp[:, 0]  # Only used if "reuse_pred" is set
 
         for w in range(self.opt.sentence_len):
             x = last_output if self.opt.reuse_pred else inp[:, w]
-            output, hidden = self.baseline.forward(x, hidden)
+            output, hidden = self.forward(x, hidden)
             last_output = self.select_word_index_from_output(output)
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
