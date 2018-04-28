@@ -162,18 +162,110 @@ class Model(WordRNNModel):
                 return False
         return True
 
-    def evaluate(self, batch):
+    def ev1(self, batch):
+        inp, target = self.baseline.get_input_and_target(batch)
+        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        loss = 0
+        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
 
+        for w in range(self.opt.sentence_len):
+            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
+            output, hidden = self.baseline.forward(x, hidden)
+            last_output = self.baseline.select_word_index_from_output(output)
+            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def ev2(self, batch):
         inp, target = self.get_input_and_target(batch)
+        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        loss = 0
+        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+
+        for w in range(self.opt.sentence_len):
+            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
+            output, hidden = self.baseline.forward(x, hidden)
+            last_output = self.baseline.select_word_index_from_output(output)
+            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def ev3(self, batch):
+        inp, target = self.baseline.get_input_and_target(batch)
         hidden = self.init_hidden(self.opt.batch_size)
         loss = 0
         last_output = inp[:, 0]  # Only used if "reuse_pred" is set
 
         for w in range(self.opt.sentence_len):
+            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
+            output, hidden = self.baseline.forward(x, hidden)
+            last_output = self.baseline.select_word_index_from_output(output)
+            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def ev4(self, batch):
+        inp, target = self.baseline.get_input_and_target(batch)
+        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        loss = 0
+        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+
+        for w in range(self.opt.sentence_len):
             x = last_output if self.opt.reuse_pred else inp[:, w]
+            output, hidden = self.baseline.forward(x, hidden)
+            last_output = self.baseline.select_word_index_from_output(output)
+            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def ev5(self, batch):
+        inp, target = self.baseline.get_input_and_target(batch)
+        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        loss = 0
+        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+
+        for w in range(self.opt.sentence_len):
+            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
             output, hidden = self.forward(x, hidden)
+            last_output = self.baseline.select_word_index_from_output(output)
+            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def ev6(self, batch):
+        inp, target = self.baseline.get_input_and_target(batch)
+        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        loss = 0
+        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+
+        for w in range(self.opt.sentence_len):
+            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
+            output, hidden = self.baseline.forward(x, hidden)
             last_output = self.select_word_index_from_output(output)
+            loss += self.baseline.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def ev7(self, batch):
+        inp, target = self.baseline.get_input_and_target(batch)
+        hidden = self.baseline.init_hidden(self.opt.batch_size)
+        loss = 0
+        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+
+        for w in range(self.opt.sentence_len):
+            x = last_output if self.baseline.opt.reuse_pred else inp[:, w]
+            output, hidden = self.baseline.forward(x, hidden)
+            last_output = self.baseline.select_word_index_from_output(output)
             loss += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+
+        return loss
+
+    def evaluate(self, batch):
+
+        print((
+            self.ev1(batch), self.ev2(batch), self.ev3(batch), self.ev4(batch), self.ev5(batch), self.ev6(batch),
+            self.ev7(batch)
+        ))
 
         # loss_reconstruction = 0
         # loss_topic = 0
