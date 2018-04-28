@@ -42,7 +42,6 @@ class Model(WordRNNModel):
         self.rnn.load_state_dict(baseline.rnn.state_dict())
         self.decoder.load_state_dict(baseline.decoder.state_dict())
         self.encoder_topic.load_state_dict(baseline.encoder.state_dict())  # Initialize encoder_topic with encoder
-        import pdb; pdb.set_trace()
 
     def load_word_counts(self):
         if self.opt.use_pretrained_embeddings:
