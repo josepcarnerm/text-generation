@@ -209,6 +209,37 @@ class Model(WordRNNModel):
     def get_test_topic(self):
         return self.select_topics((['love'], [['love']]))
 
+    def test_word_rnn(self, prime_words, predict_len, temperature=0.8):
+
+        hidden = self.init_hidden(1)
+        prime_input = Variable(self.from_string_to_tensor(prime_words).unsqueeze(0))
+
+        if is_remote():
+            prime_input = prime_input.cuda()
+        predicted = ' '.join(prime_words)
+
+        # Use priming string to "build up" hidden state
+        for p in range(len(prime_words) - 1):
+            _, hidden = self.forward(prime_input[:, p], hidden)
+
+        inp = prime_input[:, -1]
+
+        for p in range(predict_len):
+            output, hidden = self.forward(inp, hidden)
+
+            # Sample from the network as a multinomial distribution
+            output_dist = output.data.view(-1).div(temperature).exp()
+            top_i = torch.multinomial(output_dist, 1)[0]
+
+            # Add predicted character to string and use as next input
+            predicted_word = self.from_predicted_index_to_string(top_i)
+            predicted += ' '+predicted_word
+            inp = Variable(self.from_string_to_tensor([predicted_word]).unsqueeze(0))
+            if is_remote():
+                inp = inp.cuda()
+
+        return predicted
+
     def test(self, prime_words, predict_len, temperature=0.8):
 
         self.copy_weights_encoder()
@@ -246,6 +277,7 @@ class Model(WordRNNModel):
             if is_remote():
                 inp = inp.cuda()
 
+        import pdb; pdb.set_trace()
         return predicted
 
     def parameters(self):
