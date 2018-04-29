@@ -90,7 +90,7 @@ class Model(WordRNNModel):
             batch = batch[1]
         inp, target = self.get_input_and_target(batch)
         # Topic is provided as an initialization to the hidden state
-        if self.opt.bidirectional:
+        if self.opt.bidir:
             hidden = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1).permute(1, 0, 2), \
                      torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1).permute(1, 0, 2)  # N_layers x batch_size x N_hidden
         else:
@@ -168,7 +168,7 @@ class Model(WordRNNModel):
         inp, target = self.get_input_and_target(batch)
 
         # Topic is provided as an initialization to the hidden state
-        if self.opt.bidirectional:
+        if self.opt.bidir:
             topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
                 .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
         else:
@@ -203,9 +203,14 @@ class Model(WordRNNModel):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
-        loss = self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic*ratio
-        return loss, loss_reconstruction, loss_topic
+        if (self.opt.ETL):
+            ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
+            loss = self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic*ratio
+            return loss, loss_reconstruction, loss_topic
+        else:
+            ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
+            loss = self.opt.loss_alpha*loss_reconstruction
+            return loss, loss_reconstruction, 0.0
 
     def get_test_topic(self):
         return self.select_topics((['love'], [['love']]))
@@ -214,7 +219,7 @@ class Model(WordRNNModel):
 
         self.copy_weights_encoder()
         topic, _ = self.get_test_topic()
-        if self.opt.bidirectional:
+        if self.opt.bidir:
             topic_enc = torch.cat([self.encoder(topic) for _ in range(self.opt.n_layers_rnn*2)], 1) \
                 .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
         else:

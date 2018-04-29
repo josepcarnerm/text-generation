@@ -17,7 +17,7 @@ class Model(nn.Module):
         self.N_WORDS = len(self.word2idx)
 
         self.encoder = nn.Embedding(self.N_WORDS, self.opt.hidden_size_rnn)
-        if self.opt.bidirectional:
+        if self.opt.bidir:
             self.rnn = nn.LSTM(self.opt.hidden_size_rnn, self.opt.hidden_size_rnn, self.opt.n_layers_rnn,
                                batch_first=False, bidirectional=True, dropout=self.opt.dropout)
             self.decoder = nn.Linear(self.opt.hidden_size_rnn*2, self.N_WORDS)
@@ -130,7 +130,7 @@ class Model(nn.Module):
         return torch.exp(loss.data[0])
 
     def init_hidden(self, batch_size):
-        if self.opt.bidirectional:
+        if self.opt.bidir:
             return (zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn*2, batch_size, self.opt.hidden_size_rnn)),
                     zeros(gpu=is_remote(), sizes=(self.opt.n_layers_rnn*2, batch_size, self.opt.hidden_size_rnn)))
         else:

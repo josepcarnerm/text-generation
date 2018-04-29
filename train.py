@@ -18,7 +18,7 @@ import utils
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
 parser.add_argument('-dataloader', type=str, default='multi_file_str')  # Must be a valid file name in dataloaders/ folder
-parser.add_argument('-model', type=str, default='word_rnn')  # Must be a valid file name in models/ folder
+parser.add_argument('-model', type=str, default='word_rnn_topic_least_frequent_word')  # Must be a valid file name in models/ folder
 parser.add_argument('-batch_size', type=int, default=128)
 parser.add_argument('-lrt', type=float, default=0.0001)
 parser.add_argument('-epoch_size', type=int, default=100)
@@ -34,13 +34,13 @@ parser.add_argument('-hidden_size_rnn', type=int, default=200, help='RNN hidden 
 parser.add_argument('-n_layers_rnn', type=int, default=2, help='Num layers RNN')
 parser.add_argument('-reuse_pred', action='store_true', help='if true, feed prediction in next timestep instead of true input')
 parser.add_argument('-use_pretrained_embeddings', action='store_true', help='if true, use pretrained glove embeddings')
-parser.add_argument('-bidirectional', action='store_true', help='if true, use bidirectional LSTMs')
+parser.add_argument('-bidir', action='store_true', help='if true, use bidirectional LSTMs')
 parser.add_argument('-glove_dir', type=str, default='data/glove.6B/glove.6B.200d.txt', help='directory to pretrained glove vectors')
 parser.add_argument('-char_ngram', type=int, default=2, help='Size of ending char ngram to use in embedding.')
 # Word rnn topic dependent parameters
 parser.add_argument('-loss_alpha', type=float, default=0.99, help='How much weight reconstruction loss is given over topic closeness loss')
 parser.add_argument('-baseline_model', type=str, help='Baseline model from which to pre-init topic model weights')
-
+parser.add_argument('-ETL', action='store_false', help='if true, have an explicit topic loss in topic models')
 #################################
 # Dataloader dependent settings #
 #################################
@@ -52,6 +52,7 @@ parser.add_argument('-sentence_len', type=int, default=20)
 parser.add_argument('-input_folder_path', type=str, default='data_gutenberg', help='path to input file')
 
 opt = parser.parse_args()
+
 opt.data_dir = (opt.data_dir + '/') if not opt.data_dir.endswith('/') else opt.data_dir
 if opt.dataloader == 'multi_file_str':
     opt.input_file = opt.input_folder_path
@@ -95,7 +96,7 @@ def get_batch(dataset):
 get_batch(train_dataset)
 get_batch(test_dataset)
 print('Train dataset loaded with {} sentences of {} words each. {} words in total'.format(len(train_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
-print('Test dataset loaded with {} sentences of {} words each. {} words in total'.format(len(test_dataset), opt.sentence_len, len(train_dataset)*opt.sentence_len))
+print('Test dataset loaded with {} sentences of {} words each. {} words in total'.format(len(test_dataset), opt.sentence_len, len(test_dataset)*opt.sentence_len))
 # --------------------------------------------------------------------------------------------------------------
 
 
@@ -159,8 +160,10 @@ def test_epoch(epoch):
             loss_batch, loss_reconstruction, loss_topic = model.evaluate(batch)
             total_loss += loss_batch.data[0] / opt.sentence_len
             total_loss_reconstruction += loss_reconstruction.data[0] / opt.sentence_len
-            total_loss_topic += loss_topic.data[0] / opt.sentence_len
-            if epoch < 10:
+            if self.opt.ETL:
+                total_loss_topic += loss_topic.data[0] / opt.sentence_len
+
+            if epoch < 10 and self.opt.ETL:
                 print('[Test] time:{}, iter:{}, loss:{}, loss reconstruction: {}, loss topic: {}'.format(
                     utils.time_since(start), i, loss_batch.data[0] / opt.sentence_len,
                     loss_reconstruction.data[0] / opt.sentence_len, loss_topic.data[0] / opt.sentence_len
@@ -243,7 +246,6 @@ if __name__ == '__main__':
     numpy.random.seed(opt.seed)
     torch.manual_seed(opt.seed)
     start = time.time()
-
     if os.path.isfile(opt.save_dir + 'checkpoint'):
         print('loading existing model...')
         utils.log(opt.save_dir + 'logs.txt', '[loading existing model]')
