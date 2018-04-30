@@ -110,7 +110,7 @@ class Model(WordRNNModelTopic):
             words_sorted = sorted([(self.word_count[word], word) for word in set(sentence) if is_nava(word) and word in self.word2idx])
             if len(words_sorted) < self.opt.n_layers_rnn:
                 n_more = self.opt.n_layers_rnn - len(words_sorted)
-                for i in range(n_more):
+                for _ in range(n_more):
                     words_sorted.append(words_sorted[0])
             for j in range(self.opt.n_layers_rnn):
                 topics[j,i] = self.from_string_to_tensor([words_sorted[j][1]])
@@ -191,7 +191,9 @@ class Model(WordRNNModelTopic):
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
+        ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
+        loss = self.opt.loss_alpha * loss_reconstruction + (1 - self.opt.loss_alpha) * loss_topic * ratio
+        return loss, loss_reconstruction, loss_topic
 
     def test(self, prime_words, predict_len, temperature=0.8):
 

@@ -36,6 +36,9 @@ class Model(WordRNNModel):
     def initialize(self, baseline_model):
         # baseline_model must be path to "checkpoint" file
         baseline = torch.load(baseline_model).get('model')
+        self.baseline = baseline
+        self.word2idx = baseline.word2idx
+        self.inverted_word_dict = baseline.inverted_word_dict
         self.encoder.load_state_dict(baseline.encoder.state_dict())
         self.rnn.load_state_dict(baseline.rnn.state_dict())
         self.decoder.load_state_dict(baseline.decoder.state_dict())
@@ -195,12 +198,14 @@ class Model(WordRNNModel):
             loss_topic_total_weight += loss_topic_weights
             loss_topic += self.closeness_to_topics(output, topics) * loss_topic_weights
 
-        loss_topic = torch.mean(loss_topic/loss_topic_total_weight)
+        loss_topic = torch.mean(loss_topic / loss_topic_total_weight)
 
         self.losses_reconstruction.append(loss_reconstruction.data[0])
         self.losses_topic.append(loss_topic.data[0])
 
-        return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
+        ratio = float(loss_reconstruction.detach().cpu().data.numpy()[0] / loss_topic.detach().cpu().data.numpy()[0])
+        loss = self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic*ratio
+        return loss, loss_reconstruction, loss_topic
 
     def get_test_topic(self):
         return self.select_topics((['love'], [['love']]))
