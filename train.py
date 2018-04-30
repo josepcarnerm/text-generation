@@ -18,7 +18,7 @@ import utils
 parser = argparse.ArgumentParser()
 parser.add_argument('-seed', type=int, default=1)
 parser.add_argument('-dataloader', type=str, default='multi_file_str')  # Must be a valid file name in dataloaders/ folder
-parser.add_argument('-model', type=str, default='word_rnn_topic_least_frequent_word')  # Must be a valid file name in models/ folder
+parser.add_argument('-model', type=str, default='gensim_keyword_topic_model')  # Must be a valid file name in models/ folder
 parser.add_argument('-batch_size', type=int, default=128)
 parser.add_argument('-lrt', type=float, default=0.0001)
 parser.add_argument('-epoch_size', type=int, default=100)
@@ -46,7 +46,7 @@ parser.add_argument('-ETL', action='store_false', help='if true, have an explici
 #################################
 # Single file
 parser.add_argument('-input_file', type=str, default='gutenberg', help='path to input file')
-parser.add_argument('-sentence_len', type=int, default=20)
+parser.add_argument('-sentence_len', type=int, default=50)
 
 # Multi file
 parser.add_argument('-input_folder_path', type=str, default='data_gutenberg', help='path to input file')
@@ -90,7 +90,10 @@ def get_batch(dataset):
     for b in range(opt.batch_size):
         item = dataset.__getitem__(random.randint(0, len(dataset)))
         for i in range(opt.sentence_len+1):
-            batch[i][b] = item[i]
+            try:
+                batch[i][b] = item[i]
+            except:
+                import pdb; pdb.set_trace()
     return batch
 
 get_batch(train_dataset)

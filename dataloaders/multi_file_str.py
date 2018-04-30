@@ -54,19 +54,19 @@ class MyDataset(Dataset):
 
                 use_last = True
                 while sentence_tokenized_words:
-                    sentence = sentence_tokenized_words.pop(0)
-                    sentence = word_tokenize(sentence)
-                    sentence = [word.lower() for word in sentence if word.strip() != '']
-                    while len(sentence) < self.opt.sentence_len:
+                    raw_sentence = sentence_tokenized_words.pop(0)
+                    tokenized_sentence = word_tokenize(raw_sentence)
+                    processed_sentence = [word.lower() for word in tokenized_sentence if word.strip() != '']
+                    while len(processed_sentence) < self.opt.sentence_len:
                         if not sentence_tokenized_words:
                             use_last = False
                             break
-                        sentence = sentence_tokenized_words.pop(0)
-                        sentence = word_tokenize(sentence)
-                        sentence = [word.lower() for word in sentence if word.strip() != '']
+                        raw_sentence = sentence_tokenized_words.pop(0)
+                        tokenized_sentence = word_tokenize(raw_sentence)
+                        processed_sentence += [word.lower() for word in tokenized_sentence if word.strip() != '']
                     if use_last:
-                        if len(sentence) > self.opt.sentence_len:
-                            self.sentences.append(sentence)
+                        if len(processed_sentence) > self.opt.sentence_len:
+                            self.sentences.append(processed_sentence)
 
             # When using pretrained glove vectors, only pick sentences whose words (all of them) have its corresponding glove vector
             if self.opt.use_pretrained_embeddings:
