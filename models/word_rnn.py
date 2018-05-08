@@ -53,10 +53,12 @@ class Model(nn.Module):
 
     def from_string_to_tensor(self, sentence):
         tensor = torch.LongTensor(len(sentence))
+        # import pdb; pdb.set_trace()
         for i, word in enumerate(sentence):
             try:
                 tensor[i] = self.word2idx[word]
             except:
+                # import pdb; pdb.set_trace()
                 continue
         return tensor
 

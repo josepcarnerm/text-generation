@@ -46,7 +46,7 @@ parser.add_argument('-ETL', action='store_false', help='if true, have an explici
 #################################
 # Single file
 parser.add_argument('-input_file', type=str, default='gutenberg', help='path to input file')
-parser.add_argument('-sentence_len', type=int, default=50)
+parser.add_argument('-sentence_len', type=int, default=40)
 
 # Multi file
 parser.add_argument('-input_folder_path', type=str, default='data_gutenberg', help='path to input file')

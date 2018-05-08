@@ -57,13 +57,19 @@ class Model(WordRNNModelTopic):
             try:
                 topic_words = self.get_eval_keywords(sentence)
             except:
-                import pdb; pdb.set_trace()
-            topics[i] = self.from_string_to_tensor(topic_words)
+            	continue
+                # import pdb; pdb.set_trace()
+            try:
+            	topics[i] = self.from_string_to_tensor(topic_words)
+            except:
+            	continue
+                # import pdb; pdb.set_trace()
+            
             aggr_topics_words += topic_words
 
         return Variable(topics).cuda() if is_remote() else Variable(topics), aggr_topics_words
 
-    def get_eval_keywords(self, sentence, n_words=1, scores=False):
+    def get_eval_keywords(self, sentence, n_words=5, scores=False):
         '''
         Gets a list of n_words keywords (and scores) from a given evaluation sentence
         \n:param sentence: input sentence, list or string
@@ -76,52 +82,52 @@ class Model(WordRNNModelTopic):
         # print("Sentence trying to be keyworded: " + sentence)
         return keywords(sentence, words=n_words, scores=scores, split=True)
 
-    def evaluate(self, batch):
+    # def evaluate(self, batch):
 
-        loss_reconstruction = 0
-        loss_topic = 0
+    #     loss_reconstruction = 0
+    #     loss_topic = 0
 
-        self.copy_weights_encoder()
-        topics, topics_words = self.select_topics(batch)
-        inp, target = self.get_input_and_target(batch)
+    #     self.copy_weights_encoder()
+    #     topics, topics_words = self.select_topics(batch)
+    #     inp, target = self.get_input_and_target(batch)
 
-        # Topic is provided as an initialization to the hidden state
-        if self.opt.bidir:
-            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
-                .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
-        else:
-            topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
-                             .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+    #     # Topic is provided as an initialization to the hidden state
+    #     if self.opt.bidir:
+    #         topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn*2)], 1) \
+    #             .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
+    #     else:
+    #         topic_enc = torch.cat([self.encoder(topics) for _ in range(self.opt.n_layers_rnn)], 1) \
+    #                          .contiguous().permute(1, 0, 2)  # N_layers x 1 x N_hidden
 
-        hidden = topic_enc, topic_enc.clone()
+    #     hidden = topic_enc, topic_enc.clone()
 
-        # Encode/Decode sentence
-        loss_topic_total_weight = 0
-        last_output = inp[:, 0]  # Only used if "reuse_pred" is set
-        running_sentence = []
-        for w in range(self.opt.sentence_len):
+    #     # Encode/Decode sentence
+    #     loss_topic_total_weight = 0
+    #     last_output = inp[:, 0]  # Only used if "reuse_pred" is set
+    #     running_sentence = []
+    #     for w in range(self.opt.sentence_len):
 
-            x = last_output if self.opt.reuse_pred else inp[:, w]
-            output, hidden = self.forward(x, hidden)
+    #         x = last_output if self.opt.reuse_pred else inp[:, w]
+    #         output, hidden = self.forward(x, hidden)
 
-            # Reconstruction Loss
-            loss_reconstruction += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
+    #         # Reconstruction Loss
+    #         loss_reconstruction += self.criterion(output.view(self.opt.batch_size, -1), target[:, w])
 
-            _, words_i = output.max(1)
-            last_output = words_i
-            import pdb; pdb.set_trace()
-            running_sentence += [self.inverted_word_dict[i.data[0]] for i in words_i]
-            # Topic closeness loss
-            if (w == self.opt.sentence_len - 1):
+    #         _, words_i = output.max(1)
+    #         last_output = words_i
+    #         import pdb; pdb.set_trace()
+    #         running_sentence += [self.inverted_word_dict[i.data[0]] for i in words_i]
+    #         # Topic closeness loss
+    #         if (w == self.opt.sentence_len - 1):
 
-                loss_topic += self.closeness_to_topics(output, topics) 
+    #             loss_topic += self.closeness_to_topics(output, topics) 
 
-        loss_topic = torch.mean(loss_topic/loss_topic_total_weight)
+    #     loss_topic = torch.mean(loss_topic/loss_topic_total_weight)
 
-        self.losses_reconstruction.append(loss_reconstruction.data[0])
-        self.losses_topic.append(loss_topic.data[0])
+    #     self.losses_reconstruction.append(loss_reconstruction.data[0])
+    #     self.losses_topic.append(loss_topic.data[0])
 
-        if (self.opt.ETL):
-            return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
-        else:
-            return self.opt.loss_alpha*loss_reconstruction
+    #     if (self.opt.ETL):
+    #         return self.opt.loss_alpha*loss_reconstruction + (1-self.opt.loss_alpha)*loss_topic
+    #     else:
+    #         return self.opt.loss_alpha*loss_reconstruction
